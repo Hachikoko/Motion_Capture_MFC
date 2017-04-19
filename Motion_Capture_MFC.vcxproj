@@ -209,6 +209,7 @@
     <ClInclude Include="OpenGL.h" />
     <ClInclude Include="OpenGLWindow.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="SerialPort.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Targa.h" />
     <ClInclude Include="targetver.h" />
@@ -232,6 +233,7 @@
     <ClCompile Include="Motion_Capture_MFCDoc.cpp" />
     <ClCompile Include="Motion_Capture_MFCView.cpp" />
     <ClCompile Include="OpenGLWindow.cpp" />
+    <ClCompile Include="SerialPort.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -262,6 +264,7 @@
     <Image Include="res\filelarge.bmp" />
     <Image Include="res\filesmall.bmp" />
     <Image Include="res\icon1.ico" />
+    <Image Include="res\icon2.ico" />
     <Image Include="res\info.bmp" />
     <Image Include="res\main.bmp" />
     <Image Include="res\Motion_Capture_MFC.ico" />
@@ -272,9 +275,14 @@
     <Image Include="res\pages_hc.bmp" />
     <Image Include="res\pages_small.bmp" />
     <Image Include="res\pages_small_hc.bmp" />
+    <Image Include="res\power_button_64px_1205835_easyicon.net.ico" />
+    <Image Include="res\power_button_64px_1206378_easyicon.net.ico" />
     <Image Include="res\prohibit_24px.ico" />
     <Image Include="res\rotating_16px.ico" />
     <Image Include="res\rotating_24px.ico" />
+    <Image Include="res\SerialPort_button_off.ico" />
+    <Image Include="res\serialport_button_on.ico" />
+    <Image Include="res\serial_port_off_on.bmp" />
     <Image Include="res\Toolbar.bmp" />
     <Image Include="res\Toolbar256.bmp" />
     <Image Include="res\writelarge.bmp" />
@@ -285,7 +293,7 @@
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties RESOURCE_FILE="Motion_Capture_MFC.rc" />
+      <UserProperties _x007B_648A5600-2C6E-101B-82B6-000000000014_x007D_="CSerialPort" RESOURCE_FILE="Motion_Capture_MFC.rc" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

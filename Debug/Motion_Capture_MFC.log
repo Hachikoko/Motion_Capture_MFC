@@ -1,5 +1,3 @@
-﻿  OpenGLWindow.cpp
-g:\paper_src\host_computer\motion_capture_mfc\motion_capture_mfc\resource.h(60): warning C4005: “IDC_NO”: 宏重定义
-  c:\program files (x86)\windows kits\8.1\include\um\winuser.h(10083): note: 参见“IDC_NO”的前一个定义
+﻿  MainFrm.cpp
   Motion_Capture_MFC.vcxproj -> G:\Paper_SRC\Host_Computer\Motion_Capture_MFC\Debug\Motion_Capture_MFC.exe
   Motion_Capture_MFC.vcxproj -> G:\Paper_SRC\Host_Computer\Motion_Capture_MFC\Debug\Motion_Capture_MFC.pdb (Partial PDB)

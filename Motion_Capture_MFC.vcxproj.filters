@@ -93,6 +93,9 @@
     <ClInclude Include="OpenGLWindow.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="SerialPort.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Motion_Capture_MFC.cpp">
@@ -153,6 +156,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="OpenGLWindow.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SerialPort.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -250,6 +256,24 @@
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="res\prohibit_24px.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\icon2.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\power_button_64px_1205835_easyicon.net.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\power_button_64px_1206378_easyicon.net.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\SerialPort_button_off.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\serialport_button_on.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\serial_port_off_on.bmp">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>

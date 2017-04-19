@@ -21,6 +21,8 @@
 #define new DEBUG_NEW
 #endif
 
+
+
 // CMainFrame
 
 IMPLEMENT_DYNCREATE(CMainFrame, CFrameWndEx)
@@ -36,18 +38,53 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_COMMAND(ID_FILE_PRINT_DIRECT, &CMainFrame::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CMainFrame::OnFilePrintPreview)
 	ON_UPDATE_COMMAND_UI(ID_FILE_PRINT_PREVIEW, &CMainFrame::OnUpdateFilePrintPreview)
+	ON_COMMAND(ID_OPEN_SERIALPORT, &CMainFrame::OnOpenSerialport)
+	ON_COMMAND(ID_SERIALPORT_SELECT, &CMainFrame::OnSerialportSelect)
+	ON_COMMAND(ID_SERIALPORT_BAUDRATE, &CMainFrame::OnSerialportBaudrate)
 END_MESSAGE_MAP()
 
 // CMainFrame 构造/析构
 
 CMainFrame::CMainFrame()
+:p_ComboBox_SerialportSelect(nullptr)
 {
 	// TODO: 在此添加成员初始化代码
 	theApp.m_nAppLook = theApp.GetInt(_T("ApplicationLook"), ID_VIEW_APPLOOK_OFF_2007_BLACK);
+	comm_vector.clear();
+	p_serialPort = CSerialPort::GetSerialPortInstance();
+
+	
 }
 
 CMainFrame::~CMainFrame()
 {
+}
+
+DWORD WINAPI readPortFunc(LPVOID lpParameter)
+{
+	char buf[1024];
+	int n = 100;
+	CSerialPort*p_serialPort = CSerialPort::GetSerialPortInstance();
+	memset(buf, 0, 100);
+	while (p_serialPort->is_open())
+	{
+		n = 100;
+		if (OK_SERIALPORT != p_serialPort->readSerialPort(buf, n)) {
+			continue;
+		}
+		else
+		{
+			if (n > 0) {
+				buf[n] = '\n';
+				TRACE(buf);
+			}
+		}
+		memset(buf, 0, 1024);
+//		TRACE("RUN\n");
+		Sleep(10);
+	}
+
+	return 0;
 }
 
 int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
@@ -59,6 +96,9 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	m_wndRibbonBar.Create(this);
 	m_wndRibbonBar.LoadFromResource(IDR_RIBBON);
+	p_ComboBox_SerialportSelect = DYNAMIC_DOWNCAST(CMFCRibbonComboBox, m_wndRibbonBar.FindByID(ID_SERIALPORT_SELECT));
+	p_ComboBox_SerialportbaudRate = DYNAMIC_DOWNCAST(CMFCRibbonComboBox, m_wndRibbonBar.FindByID(ID_SERIALPORT_BAUDRATE));
+	EnumerateSerialPorts(comm_vector);
 
 	if (!m_wndStatusBar.Create(this))
 	{
@@ -343,4 +383,104 @@ void CMainFrame::OnFilePrintPreview()
 void CMainFrame::OnUpdateFilePrintPreview(CCmdUI* pCmdUI)
 {
 	pCmdUI->SetCheck(IsPrintPreview());
+}
+
+
+void CMainFrame::OnOpenSerialport()
+{
+	// TODO: 在此添加命令处理程序代码
+	int ret = 0;
+	CString data_pre_comm = p_ComboBox_SerialportSelect->GetEditText();
+	CString data_baudRate = p_ComboBox_SerialportbaudRate->GetEditText();
+	
+	if (data_baudRate.GetLength() <= 0) {
+		AfxMessageBox(_T("波特率为空"));
+		return;
+	}
+	if (data_pre_comm.GetLength() <= 0) {
+		AfxMessageBox(_T("串口名选择为空"));
+		return;
+	}
+	CString data_comm("\\\\.\\");
+	data_comm += data_pre_comm;
+
+	if (!p_serialPort->is_open()) {
+		
+		ret = p_serialPort->openSeialPort(data_comm, _ttoi(data_baudRate));
+		if (ret != OK_SERIALPORT) {
+			AfxMessageBox(_T("串口打开失败"));
+			return;
+		}
+
+		//开启读串口线程
+		hthread_SerialPort = CreateThread(NULL, 0, readPortFunc, nullptr, 0, &threadID);
+		TRACE("%d\n", threadID);
+//		p_serialPort->writeSerialPort("12", 2);
+	}
+	else
+	{
+		AfxMessageBox(_T("串口已经打开"));
+		return;
+	}
+
+
+	return;
+}
+
+
+// 枚举出系统中可用的串口
+void CMainFrame::EnumerateSerialPorts(std::vector<CString>& comm_vector)
+{
+	
+	//确定清除所有数据
+	comm_vector.clear();
+
+	for (UINT i = 0;i < 256;i++)
+	{
+		//格式化设备名称
+		CString sPort;
+		sPort.Format(_T("\\\\.\\COM%d"), i);
+
+		//尝试打开串口
+		BOOL bSuccess = FALSE;
+		HANDLE hPort = ::CreateFile(sPort, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
+
+		if (hPort == INVALID_HANDLE_VALUE)
+		{
+			DWORD dwError = GetLastError();
+			//Check to see if the error was because some other app had the port open or a general failure  
+			if (dwError == ERROR_ACCESS_DENIED || dwError == ERROR_GEN_FAILURE)
+				bSuccess = TRUE;
+		}
+		else
+		{
+			//The port was opened successfully  
+			bSuccess = TRUE;
+			//Don't forget to close the port, since we are going to do nothing with it anyway  
+			CloseHandle(hPort);
+		}
+		//Add the port number to the array which will be returned  
+		if (bSuccess) {
+			sPort.Format(_T("COM%d"), i);
+			comm_vector.push_back(sPort);
+			errno_t err = p_ComboBox_SerialportSelect->AddItem(sPort);
+			if (CB_ERR == err || CB_ERRSPACE  == err) {
+				MessageBox(_T("添加串口名称错误"));
+			}
+		}
+	}
+}
+
+
+void CMainFrame::OnSerialportSelect()
+{
+	// TODO: 在此添加命令处理程序代码
+
+
+}
+
+
+void CMainFrame::OnSerialportBaudrate()
+{
+	// TODO: 在此添加命令处理程序代码
 }

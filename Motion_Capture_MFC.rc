@@ -112,6 +112,8 @@ IDB_PAGES_SMALL_HC      BITMAP                  "res\\pages_small_hc.bmp"
 
 IDB_INFO                BITMAP                  "res\\info.bmp"
 
+IDB_SERIALPORT_ON_OFF   BITMAP                  "res\\serial_port_off_on.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -268,7 +270,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "关于 Motion_Capture_MFC"
 FONT 9, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    ICON            IDR_MAINFRAME,IDC_STATIC,14,14,21,20
+    ICON            IDR_MAINFRAME,IDC_STATIC,14,14,20,20
     LTEXT           "Motion_Capture_MFC，1.0 版",IDC_STATIC,42,14,114,8,SS_NOPREFIX
     LTEXT           "Copyright (C) 2017",IDC_STATIC,42,26,114,8
     DEFPUSHBUTTON   "确定",IDOK,113,41,50,14,WS_GROUP
@@ -353,6 +355,17 @@ IDC_INVALID             CURSOR                  "res\\no.cur"
 IDC_ROTATE              CURSOR                  "res\\rotate.cur"
 
 IDC_TRCK                CURSOR                  "res\\trck4way.cur"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_ABOUTBOX AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
 
 
 /////////////////////////////////////////////////////////////////////////////

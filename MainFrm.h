@@ -15,7 +15,11 @@
 #pragma once
 #include "CalendarBar.h"
 #include "Resource.h"
+#include "SerialPort.h"
+#include <vector>
+#include <iostream>
 
+DWORD WINAPI readPortFunc(LPVOID lpParameter);
 class COutlookBar : public CMFCOutlookBar
 {
 	virtual BOOL AllowShowOnPaneMenu() const { return TRUE; }
@@ -29,6 +33,14 @@ protected: // 仅从序列化创建
 	CMainFrame();
 	DECLARE_DYNCREATE(CMainFrame)
 
+private:
+	std::vector<CString> comm_vector;
+	CMFCRibbonComboBox * p_ComboBox_SerialportSelect;
+	CMFCRibbonComboBox * p_ComboBox_SerialportbaudRate;
+	CSerialPort*p_serialPort;
+	HANDLE hthread_SerialPort;
+	DWORD threadID;
+
 // 特性
 public:
 
@@ -38,7 +50,7 @@ public:
 // 重写
 public:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-
+//	friend DWORD WINAPI readPortFunc(LPVOID lpParameter);
 // 实现
 public:
 	virtual ~CMainFrame();
@@ -78,6 +90,16 @@ protected:
 	CMFCOutlookBarTabCtrl* FindOutlookParent(CWnd* pWnd);
 	CMFCOutlookBarTabCtrl* m_pCurrOutlookWnd;
 	CMFCOutlookBarPane*    m_pCurrOutlookPage;
+public:
+	afx_msg void OnOpenSerialport();
+private:
+	// 枚举出系统中可用的串口
+	void EnumerateSerialPorts(std::vector<CString>& comm_vector);
+public:
+	afx_msg void OnSerialportSelect();
+	afx_msg void OnSerialportBaudrate();
 };
+
+
 
 
