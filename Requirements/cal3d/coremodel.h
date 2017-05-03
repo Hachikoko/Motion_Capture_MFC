@@ -39,6 +39,7 @@ public:
   int getCoreAnimationCount();
   int loadCoreAnimation(const std::string& strFilename);
   int loadCoreAnimation(const std::string& strFilename, const std::string& strAnimationName);
+  int loadCoreAnimation(const char buf[]);
   int unloadCoreAnimation(const std::string& name);
   int unloadCoreAnimation(int coreAnimationId);
   bool saveCoreAnimation(const std::string& strFilename, int coreAnimationId);

@@ -22,6 +22,9 @@ protected: // 仅从序列化创建
 	CMotion_Capture_MFCDoc();
 	DECLARE_DYNCREATE(CMotion_Capture_MFCDoc)
 
+public:
+	CObArray frameDataArray;
+
 // 特性
 public:
 

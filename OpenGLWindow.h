@@ -139,6 +139,8 @@ protected:
 	bool IsModelValid(void);
 
 	public:
+
+
 		bool GetModelInfo(int& numberOfFaces, int& numberOfAnimations, int& numberOfVertices
 			, int& numberOfMeshes, int& numberOfMaterials, float& LODLevel);
 

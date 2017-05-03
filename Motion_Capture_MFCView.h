@@ -14,6 +14,7 @@
 
 #pragma once
 #include "OpenGLWindow.h"
+#include "Motion_Capture_MFCDoc.h"
 
 class CMotion_Capture_MFCView : public CView
 {

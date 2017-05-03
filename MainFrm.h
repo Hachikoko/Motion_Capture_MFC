@@ -18,8 +18,18 @@
 #include "SerialPort.h"
 #include <vector>
 #include <iostream>
+#include "Motion_Capture_MFCView.h"
+#include "Motion_Capture_MFCDoc.h"
 
 DWORD WINAPI readPortFunc(LPVOID lpParameter);
+class CMainFrame;
+struct PtrForFrameAppDoc
+{
+	CMainFrame*pMainFrame;
+	CMotion_Capture_MFCView*pView;
+	CMotion_Capture_MFCDoc*pDoc;
+};
+
 class COutlookBar : public CMFCOutlookBar
 {
 	virtual BOOL AllowShowOnPaneMenu() const { return TRUE; }
@@ -35,11 +45,17 @@ protected: // 仅从序列化创建
 
 private:
 	std::vector<CString> comm_vector;
+
 	CMFCRibbonComboBox * p_ComboBox_SerialportSelect;
 	CMFCRibbonComboBox * p_ComboBox_SerialportbaudRate;
-	CSerialPort*p_serialPort;
-	HANDLE hthread_SerialPort;
-	DWORD threadID;
+	CMFCRibbonButton * p_Button_OpenSerialPort;
+	CMotion_Capture_MFCView *p_Motion_Capture_MFCView;
+
+	CSerialPort*p_serialPort;    //串口类指针
+	HANDLE hthread_SerialPort;   //串口读线程句柄
+	DWORD threadID;				 //串口读线程ID
+
+
 
 // 特性
 public:
@@ -91,13 +107,16 @@ protected:
 	CMFCOutlookBarTabCtrl* m_pCurrOutlookWnd;
 	CMFCOutlookBarPane*    m_pCurrOutlookPage;
 public:
-	afx_msg void OnOpenSerialport();
+	//各主要指针
+	struct PtrForFrameAppDoc ptrForFrameAppDoc;
+	
 private:
 	// 枚举出系统中可用的串口
 	void EnumerateSerialPorts(std::vector<CString>& comm_vector);
 public:
 	afx_msg void OnSerialportSelect();
 	afx_msg void OnSerialportBaudrate();
+	afx_msg void OnOpenSerialport();
 };
 
 

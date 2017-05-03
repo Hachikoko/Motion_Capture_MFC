@@ -37,7 +37,7 @@ public:
 	virtual ~CSerialPort();
 	static CSerialPort* GetSerialPortInstance();
 	int openSeialPort(const CString& comm_name,UINT baudRate);
-	int closeSerialPort(const HANDLE& handle);
+	int closeSerialPort(void);
 	int readSerialPort(char str[],int& n);
 	int writeSerialPort(const char str[], const int n);
 	bool is_open();

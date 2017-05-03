@@ -64,12 +64,12 @@ int CSerialPort::openSeialPort(const CString & comm_name, UINT baudRate)
 
 	//…Ë÷√≥¨ ±
 	COMMTIMEOUTS timeOuts;
-	timeOuts.ReadIntervalTimeout = MAXDWORD;
-	timeOuts.ReadTotalTimeoutMultiplier = 0;
-	timeOuts.ReadTotalTimeoutConstant = 0;
-	//timeOuts.ReadIntervalTimeout = 1;
-	//timeOuts.ReadTotalTimeoutMultiplier = 1;
-	//timeOuts.ReadTotalTimeoutConstant = 3;
+	//timeOuts.ReadIntervalTimeout = MAXDWORD;
+	//timeOuts.ReadTotalTimeoutMultiplier = 0;
+	//timeOuts.ReadTotalTimeoutConstant = 0;
+	timeOuts.ReadIntervalTimeout = 1;
+	timeOuts.ReadTotalTimeoutMultiplier = 1;
+	timeOuts.ReadTotalTimeoutConstant = 3;
 	timeOuts.WriteTotalTimeoutMultiplier = 1;
 	timeOuts.WriteTotalTimeoutConstant = 3;
 	if (!SetCommTimeouts(m_COM_Handle, &timeOuts)) {
@@ -92,9 +92,9 @@ int CSerialPort::openSeialPort(const CString & comm_name, UINT baudRate)
 	return OK_SERIALPORT;
 }
 
-int CSerialPort::closeSerialPort(const HANDLE & handle)
+int CSerialPort::closeSerialPort(void)
 {
-	CloseHandle(handle);
+	CloseHandle(m_COM_Handle);
 	openFlag = false;
 	return 0;
 }

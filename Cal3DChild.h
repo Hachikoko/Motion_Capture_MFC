@@ -12,6 +12,7 @@ class Cal3DChild
 public:
     Cal3DChild();
 	~Cal3DChild();
+	CalCoreModel* pCalCoreModel;
 	bool Init( CalCoreModel* coreModel );
 	void RenderModel( float elapsedTime, bool isTextured );
 	bool Release();

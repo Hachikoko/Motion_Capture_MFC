@@ -14,7 +14,7 @@
 
 #include "stdafx.h"
 #include "Motion_Capture_MFC.h"
-
+#include "SerialDataProc.h"
 #include "MainFrm.h"
 
 #ifdef _DEBUG
@@ -47,41 +47,48 @@ END_MESSAGE_MAP()
 
 CMainFrame::CMainFrame()
 :p_ComboBox_SerialportSelect(nullptr)
+, p_Motion_Capture_MFCView(nullptr)
 {
 	// TODO: 在此添加成员初始化代码
 	theApp.m_nAppLook = theApp.GetInt(_T("ApplicationLook"), ID_VIEW_APPLOOK_OFF_2007_BLACK);
 	comm_vector.clear();
 	p_serialPort = CSerialPort::GetSerialPortInstance();
 
-	
+	ptrForFrameAppDoc.pDoc = nullptr;
+	ptrForFrameAppDoc.pMainFrame = nullptr;
+	ptrForFrameAppDoc.pView = nullptr;
+
 }
 
 CMainFrame::~CMainFrame()
 {
 }
-
+static unsigned int pre_n = 0;
 DWORD WINAPI readPortFunc(LPVOID lpParameter)
 {
 	char buf[1024];
-	int n = 100;
+	int n = 1024;
 	CSerialPort*p_serialPort = CSerialPort::GetSerialPortInstance();
-	memset(buf, 0, 100);
+	memset(buf, 0, n);
 	while (p_serialPort->is_open())
 	{
-		n = 100;
+		n = 1024;
 		if (OK_SERIALPORT != p_serialPort->readSerialPort(buf, n)) {
 			continue;
 		}
 		else
 		{
 			if (n > 0) {
-				buf[n] = '\n';
-				TRACE(buf);
+//				TRACE("type:%c,index:%d,ID:%d,w:%d,x:%d,y:%d,z:%d\r\n",buf[0], *(int*)(buf + 1), *(buf + 5), *(short*)(buf + 24), *(short*)(buf + 26), *(short*)(buf + 28), *(short*)(buf + 30));
+				CSerialDataProc::dataProc((struct PtrForFrameAppDoc *)lpParameter, buf);
+
+			}
+			else
+			{
+				continue;
 			}
 		}
 		memset(buf, 0, 1024);
-//		TRACE("RUN\n");
-		Sleep(10);
 	}
 
 	return 0;
@@ -98,7 +105,9 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_wndRibbonBar.LoadFromResource(IDR_RIBBON);
 	p_ComboBox_SerialportSelect = DYNAMIC_DOWNCAST(CMFCRibbonComboBox, m_wndRibbonBar.FindByID(ID_SERIALPORT_SELECT));
 	p_ComboBox_SerialportbaudRate = DYNAMIC_DOWNCAST(CMFCRibbonComboBox, m_wndRibbonBar.FindByID(ID_SERIALPORT_BAUDRATE));
+	p_Button_OpenSerialPort = DYNAMIC_DOWNCAST(CMFCRibbonButton, m_wndRibbonBar.FindByID(ID_OPEN_SERIALPORT));
 	EnumerateSerialPorts(comm_vector);
+	
 
 	if (!m_wndStatusBar.Create(this))
 	{
@@ -142,6 +151,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	EnableAutoHidePanes(CBRS_ALIGN_RIGHT);
 	// 基于持久值设置视觉管理器和样式
 	OnApplicationLook(theApp.m_nAppLook);
+
 
 	return 0;
 }
@@ -390,6 +400,22 @@ void CMainFrame::OnOpenSerialport()
 {
 	// TODO: 在此添加命令处理程序代码
 	int ret = 0;
+
+	if (ptrForFrameAppDoc.pDoc == nullptr )
+	{
+		ptrForFrameAppDoc.pDoc = (CMotion_Capture_MFCDoc *)CFrameWnd::GetActiveDocument();
+	}
+
+	if (ptrForFrameAppDoc.pMainFrame == nullptr)
+	{
+		ptrForFrameAppDoc.pMainFrame = this;
+	}
+
+	if (ptrForFrameAppDoc.pView == nullptr)
+	{
+		ptrForFrameAppDoc.pView = (CMotion_Capture_MFCView*)ptrForFrameAppDoc.pMainFrame->GetActiveView();
+	}
+
 	CString data_pre_comm = p_ComboBox_SerialportSelect->GetEditText();
 	CString data_baudRate = p_ComboBox_SerialportbaudRate->GetEditText();
 	
@@ -409,17 +435,21 @@ void CMainFrame::OnOpenSerialport()
 		ret = p_serialPort->openSeialPort(data_comm, _ttoi(data_baudRate));
 		if (ret != OK_SERIALPORT) {
 			AfxMessageBox(_T("串口打开失败"));
+			p_Button_OpenSerialPort->SetText(_T("打开"));
 			return;
 		}
-
+		p_Button_OpenSerialPort->SetText(_T("关闭"));
+		p_Button_OpenSerialPort->SetImageIndex(1, true);
 		//开启读串口线程
-		hthread_SerialPort = CreateThread(NULL, 0, readPortFunc, nullptr, 0, &threadID);
+		hthread_SerialPort = CreateThread(NULL, 0, readPortFunc, &ptrForFrameAppDoc, 0, &threadID);
 		TRACE("%d\n", threadID);
-//		p_serialPort->writeSerialPort("12", 2);
+
 	}
 	else
 	{
-		AfxMessageBox(_T("串口已经打开"));
+		p_serialPort->closeSerialPort();
+		p_Button_OpenSerialPort->SetText(_T("打开"));
+		p_Button_OpenSerialPort->SetImageIndex(0, true);
 		return;
 	}
 
@@ -475,7 +505,14 @@ void CMainFrame::EnumerateSerialPorts(std::vector<CString>& comm_vector)
 void CMainFrame::OnSerialportSelect()
 {
 	// TODO: 在此添加命令处理程序代码
-
+	//当串口在开启状态时，串口先关闭，在打开新的串口
+	if (p_serialPort->is_open()) {
+		p_serialPort->closeSerialPort();
+		p_Button_OpenSerialPort->SetText(_T("打开"));
+		p_Button_OpenSerialPort->SetImageIndex(0, true);
+		Sleep(10);
+		OnOpenSerialport();
+	}
 
 }
 
@@ -483,4 +520,12 @@ void CMainFrame::OnSerialportSelect()
 void CMainFrame::OnSerialportBaudrate()
 {
 	// TODO: 在此添加命令处理程序代码
+	//当串口在开启状态时，串口先关闭，在以新的波特率打开
+	if (p_serialPort->is_open()) {
+		p_serialPort->closeSerialPort();
+		p_Button_OpenSerialPort->SetText(_T("打开"));
+		p_Button_OpenSerialPort->SetImageIndex(0, true);
+		Sleep(10);
+		OnOpenSerialport();
+	}
 }

@@ -27,6 +27,7 @@ Cal3DChild::~Cal3DChild()
 bool Cal3DChild::Init( CalCoreModel* coreModel )
 {
     m_calModel = new CalModel( coreModel );
+	pCalCoreModel = coreModel;
     // attach all meshes to the model
     for(int meshId = 0; meshId < coreModel->getCoreMeshCount(); meshId++)
     {

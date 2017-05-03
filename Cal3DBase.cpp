@@ -219,3 +219,19 @@ CalCoreModel* Cal3DBase::GetCore()
 {
 	return m_calCoreModel;
 }
+
+int Cal3DBase::addCoreAnimationByBuf(const char buf[])
+{
+	CStringA m_report;
+	int ID = -2;
+	if (nullptr == buf) {
+		return ID;
+	}
+	ID = m_calCoreModel->loadCoreAnimation(buf);
+	if (-1 == ID) {
+		m_report.Format("Couldn't load animation buf");
+		MessageBoxA(NULL, m_report, "Error", MB_OK);
+		return ID;
+	}
+	return ID;
+}

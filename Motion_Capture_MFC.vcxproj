@@ -191,10 +191,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Bitmap.h" />
+    <ClInclude Include="BoneDataOfFrame.h" />
     <ClInclude Include="Cal3DBase.h" />
     <ClInclude Include="Cal3DChild.h" />
     <ClInclude Include="CalendarBar.h" />
     <ClInclude Include="CommonGL.h" />
+    <ClInclude Include="FrameData.h" />
     <ClInclude Include="ImageLib.h" />
     <ClInclude Include="light0.h" />
     <ClInclude Include="light1.h" />
@@ -209,6 +211,7 @@
     <ClInclude Include="OpenGL.h" />
     <ClInclude Include="OpenGLWindow.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="SerialDataProc.h" />
     <ClInclude Include="SerialPort.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Targa.h" />
@@ -219,10 +222,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Bitmap.cpp" />
+    <ClCompile Include="BoneDataOfFrame.cpp" />
     <ClCompile Include="Cal3DBase.cpp" />
     <ClCompile Include="Cal3DChild.cpp" />
     <ClCompile Include="CalendarBar.cpp" />
     <ClCompile Include="CommonGL.cpp" />
+    <ClCompile Include="FrameData.cpp" />
     <ClCompile Include="light0.cpp" />
     <ClCompile Include="light1.cpp" />
     <ClCompile Include="light2.cpp" />
@@ -233,6 +238,7 @@
     <ClCompile Include="Motion_Capture_MFCDoc.cpp" />
     <ClCompile Include="Motion_Capture_MFCView.cpp" />
     <ClCompile Include="OpenGLWindow.cpp" />
+    <ClCompile Include="SerialDataProc.cpp" />
     <ClCompile Include="SerialPort.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

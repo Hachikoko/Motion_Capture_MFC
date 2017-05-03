@@ -188,6 +188,15 @@ int CMotion_Capture_MFCView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	m_view.InitAll();
 	m_view.ShowWindow(SW_SHOW);
+//	if (m_view.pCal3DchildModel->GetAnimationCount())
+//	{
+//		m_view.pCal3DchildModel->clearCycle(m_view.pCal3DchildModel->GetCurrentAnimationId(), 0.0f);
+//		m_view.pCal3DchildModel->SetCurrentAnimationId(2);
+////		m_view.pCal3DchildModel->blendCycle(m_view.pCal3DchildModel->GetCurrentAnimationId(), 1.0f, 0.0f);
+//		m_view.pCal3DchildModel->executeAction(m_view.pCal3DchildModel->GetCurrentAnimationId(), 1.0f, 0.0f);
+//
+//	}
+	
 
 	return true;
 }

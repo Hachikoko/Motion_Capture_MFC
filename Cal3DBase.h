@@ -22,6 +22,8 @@ public:
 	bool Release();
 	CalCoreModel* GetCore();
 	float m_scale;
+	
+	int addCoreAnimationByBuf(const char buf[]);
 private:
 	LightModel lightModel;
 	std::string m_path;

@@ -96,6 +96,15 @@
     <ClInclude Include="SerialPort.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="FrameData.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="BoneDataOfFrame.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SerialDataProc.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Motion_Capture_MFC.cpp">
@@ -159,6 +168,15 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="SerialPort.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="FrameData.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="BoneDataOfFrame.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SerialDataProc.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
