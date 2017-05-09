@@ -58,6 +58,12 @@ CMainFrame::CMainFrame()
 	ptrForFrameAppDoc.pMainFrame = nullptr;
 	ptrForFrameAppDoc.pView = nullptr;
 
+	for (int i = 0; i < 23;i++)
+	{
+		joint_num_and_node_num_pair[i] = -1;
+	}
+
+	joint_num_and_node_num_pair[12] = 6;
 }
 
 CMainFrame::~CMainFrame()
@@ -67,21 +73,28 @@ static unsigned int pre_n = 0;
 DWORD WINAPI readPortFunc(LPVOID lpParameter)
 {
 	char buf[1024];
-	int n = 1024;
+	int n = 32;
 	CSerialPort*p_serialPort = CSerialPort::GetSerialPortInstance();
 	memset(buf, 0, n);
 	while (p_serialPort->is_open())
 	{
-		n = 1024;
+		n = 32;
 		if (OK_SERIALPORT != p_serialPort->readSerialPort(buf, n)) {
 			continue;
 		}
 		else
 		{
 			if (n > 0) {
-//				TRACE("type:%c,index:%d,ID:%d,w:%d,x:%d,y:%d,z:%d\r\n",buf[0], *(int*)(buf + 1), *(buf + 5), *(short*)(buf + 24), *(short*)(buf + 26), *(short*)(buf + 28), *(short*)(buf + 30));
-				CSerialDataProc::dataProc((struct PtrForFrameAppDoc *)lpParameter, buf);
+				if (n != 32) {
+					TRACE("n = %d,type:%c\r\n", n, buf[0]);
+				}
+				else {
+					//TRACE("type:%c,index:%d,ID:%d,w:%d,x:%d,y:%d,z:%d\r\n", buf[0], buf[1], *(int*)(buf + 2), *(short*)(buf + 24), *(short*)(buf + 26), *(short*)(buf + 28), *(short*)(buf + 30));
+					CSerialDataProc::dataProc((struct PtrForFrameAppDoc *)lpParameter, buf);
+				}
+//				
 
+//				TRACE("type:%c,index:%d,ID:%d,w:%d,x:%d,y:%d,z:%d\r\n", buf[0], buf[1], *(int*)(buf + 2), *(short*)(buf + 24), *(short*)(buf + 26), *(short*)(buf + 28), *(short*)(buf + 30));
 			}
 			else
 			{
@@ -153,6 +166,48 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	OnApplicationLook(theApp.m_nAppLook);
 
 
+	return 0;
+}
+
+int CMainFrame::get_JointID_by_NodeID(const int node_id)
+{
+	if (node_id < 1) {
+		return -1;
+	}
+
+	for (int i = 0; i < 23; i++)
+	{
+		if (joint_num_and_node_num_pair[i] == node_id) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+int CMainFrame::set_JointID_by_NodeID(const int node_id, const int joint_id)
+{
+	if (node_id < 1 || node_id > 22)
+	{
+		return -1;
+	}
+
+	if (joint_id < 1 || joint_id > 22)
+	{
+		return -2;
+	}
+
+	joint_num_and_node_num_pair[node_id] = joint_id;
+
+	return 0;
+}
+
+int CMainFrame::set_joint_and_node_pair_negtive(void)
+{
+	for (int i = 0; i < 23; i++)
+	{
+		joint_num_and_node_num_pair[i] = -1;
+	}
 	return 0;
 }
 

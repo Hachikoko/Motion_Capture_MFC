@@ -55,13 +55,18 @@ private:
 	HANDLE hthread_SerialPort;   //串口读线程句柄
 	DWORD threadID;				 //串口读线程ID
 
+	
+
 
 
 // 特性
 public:
-
+	char joint_num_and_node_num_pair[23];//记录关节号对应的节点号，以关节号为下标（关节数量是固定，这样节点号就不必限定在23以内）
 // 操作
 public:
+	int get_JointID_by_NodeID(const int node_id);
+	int set_JointID_by_NodeID(const int node_id,const int joint_id);
+	int set_joint_and_node_pair_negtive(void);
 
 // 重写
 public:

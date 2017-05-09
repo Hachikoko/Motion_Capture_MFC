@@ -68,8 +68,8 @@ int CSerialPort::openSeialPort(const CString & comm_name, UINT baudRate)
 	//timeOuts.ReadTotalTimeoutMultiplier = 0;
 	//timeOuts.ReadTotalTimeoutConstant = 0;
 	timeOuts.ReadIntervalTimeout = 1;
-	timeOuts.ReadTotalTimeoutMultiplier = 1;
-	timeOuts.ReadTotalTimeoutConstant = 3;
+	timeOuts.ReadTotalTimeoutMultiplier = 0;
+	timeOuts.ReadTotalTimeoutConstant = 0;
 	timeOuts.WriteTotalTimeoutMultiplier = 1;
 	timeOuts.WriteTotalTimeoutConstant = 3;
 	if (!SetCommTimeouts(m_COM_Handle, &timeOuts)) {
