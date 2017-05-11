@@ -63,7 +63,8 @@ CMainFrame::CMainFrame()
 		joint_num_and_node_num_pair[i] = -1;
 	}
 
-	joint_num_and_node_num_pair[12] = 6;
+	joint_num_and_node_num_pair[12] = 5;
+	joint_num_and_node_num_pair[13] = 6;
 }
 
 CMainFrame::~CMainFrame()
