@@ -31,9 +31,8 @@
 *.out
 *.app
 
-#不需要的文件夹
-/Debug/*
-/Release/*
 
-#.gitignore.bak备份文件
+/Debug
+/Release
+
 .gitignore.bak
