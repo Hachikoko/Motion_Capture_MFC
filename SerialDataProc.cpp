@@ -6,6 +6,7 @@
 #include "cal3d/vector.h"
 #include "cal3d/quaternion.h"
 #include "Timer.h"
+#include <stack>
 
 static char frame_buf[1024];
 static CMotion_Capture_MFCDoc * pdoc;
@@ -58,10 +59,14 @@ int CSerialDataProc::frameDataProc(struct PtrForFrameAppDoc*pFrameViewDoc, const
 	pOpenGLView = &(pFrameViewDoc->pView->m_view);
 	p_frameDataArray = &(pdoc->frameDataArray);
 
+	//数据包中的序列
+	int buf_index = *(int*)(buf + 2);
+
 	static unsigned int current_frame_index = -1;
 	static Timer *timer_for_serial = nullptr;
 	static CFrameData* pFrameData = nullptr;
 	CBoneDataOfFrame* p_Bone_Data = nullptr;
+
 	if (timer_for_serial == nullptr)
 	{
 		timer_for_serial = new Timer;
@@ -73,8 +78,37 @@ int CSerialDataProc::frameDataProc(struct PtrForFrameAppDoc*pFrameViewDoc, const
 		}
 	}
 
+	//校准程序
+	if (pMainFrame->GetCalibrationStartFlag() && !pMainFrame->GetCalibrationFlag())
+	{
+		static int calibration_Index = 0;
+		if (calibration_Index < pMainFrame->calibration_Length) {
+			int joint_id = pMainFrame->get_JointID_by_NodeID(buf[1]);
+			calibration_sum[joint_id].w += ((float) *((short*)(buf + 24)));
+			calibration_sum[joint_id].x += ((float) *((short*)(buf + 26)));
+			calibration_sum[joint_id].y += ((float) *((short*)(buf + 28)));
+			calibration_sum[joint_id].z += ((float) *((short*)(buf + 30)));
+			pMainFrame->calibration_Index = calibration_Index;
+			if (buf_index != current_frame_index) {
+				calibration_Index++;
+				current_frame_index = buf_index;
+			}
+			return 0;
+		}
+		//计算偏差
+		calculate_bias(calibration_sum);
+		pMainFrame->ClearCalibrationStartFlag();
+		pMainFrame->SetCalibrationFlag();
+		calibration_Index = 0;
+		for (int i =0; i < 23;i++)
+		{
+			calibration_sum[i].clear();
+			calibration_sum[i].w = 0;
+		}
+	}
+
 	//有新一帧数据时，将前一帧数据制作成关键帧
-	if (current_frame_index != *(int*)(buf + 2))
+	if (current_frame_index != buf_index)
 	{
 
 		if (current_frame_index != -1) {
@@ -92,7 +126,7 @@ int CSerialDataProc::frameDataProc(struct PtrForFrameAppDoc*pFrameViewDoc, const
 		}
 
 		//将当前帧序列改为新的序列
-		current_frame_index = *(int*)(buf + 2);
+		current_frame_index = buf_index;
 		//获取间隔时间
 		float time = timer_for_serial->GetElapsedSeconds();
 
@@ -106,23 +140,7 @@ int CSerialDataProc::frameDataProc(struct PtrForFrameAppDoc*pFrameViewDoc, const
 		//获取关节号，进行获得数据标记
 		pFrameData->set_Bones_Data_Flag(joint_id);
 		p_Bone_Data = (CBoneDataOfFrame*)pFrameData->boneData.GetAt(joint_id);
-
-		p_Bone_Data->a_x = ((float) *((short*)(buf + 6))) / 10000.0f;
-		p_Bone_Data->a_y = ((float) *((short*)(buf + 8))) / 10000.0f;
-		p_Bone_Data->a_z = ((float) *((short*)(buf + 10))) / 10000.0f;
-
-		p_Bone_Data->g_x = ((float) *((short*)(buf + 12))) / 10.0f;
-		p_Bone_Data->g_y = ((float) *((short*)(buf + 14))) / 10.0f;
-		p_Bone_Data->g_z = ((float) *((short*)(buf + 16))) / 10.0f;
-
-		p_Bone_Data->m_x = ((float) *((short*)(buf + 18))) / 100.0f;
-		p_Bone_Data->m_y = ((float) *((short*)(buf + 20))) / 100.0f;
-		p_Bone_Data->m_z = ((float) *((short*)(buf + 22))) / 100.0f;
-
-		p_Bone_Data->r_w = ((float) *((short*)(buf + 24))) / 10000.0f;
-		p_Bone_Data->r_y = ((float) *((short*)(buf + 26))) / 10000.0f;
-		p_Bone_Data->r_x = ((float) *((short*)(buf + 28))) / 10000.0f;
-		p_Bone_Data->r_z = ((float) *((short*)(buf + 30))) / 10000.0f;
+		proc_Frame_Data(p_Bone_Data, buf, joint_id);
 		p_frameDataArray->Add(pFrameData);
 
 		return 0;
@@ -133,24 +151,7 @@ int CSerialDataProc::frameDataProc(struct PtrForFrameAppDoc*pFrameViewDoc, const
 		int joint_id = pMainFrame->get_JointID_by_NodeID(buf[1]);
 		pFrameData->set_Bones_Data_Flag(joint_id);
 		p_Bone_Data = (CBoneDataOfFrame*)((CFrameData*)p_frameDataArray->GetAt(p_frameDataArray->GetCount() - 1))->boneData.GetAt(joint_id);
-
-		p_Bone_Data->a_x = ((float) *(short*)(buf + 6)) / 10000.0f;
-		p_Bone_Data->a_y = ((float) *(short*)(buf + 8)) / 10000.0f;
-		p_Bone_Data->a_z = ((float) *(short*)(buf + 10)) / 10000.0f;
-
-		p_Bone_Data->g_x = ((float) *(short*)(buf + 12)) / 10.0f;
-		p_Bone_Data->g_y = ((float) *(short*)(buf + 14)) / 10.0f;
-		p_Bone_Data->g_z = ((float) *(short*)(buf + 16)) / 10.0f;
-
-		p_Bone_Data->m_x = ((float) *(short*)(buf + 18)) / 100.0f;
-		p_Bone_Data->m_y = ((float) *(short*)(buf + 20)) / 100.0f;
-		p_Bone_Data->m_z = ((float) *(short*)(buf + 22)) / 100.0f;
-
-		p_Bone_Data->r_w = ((float) *(short*)(buf + 24)) / 10000.0f; //w
-		p_Bone_Data->r_y = ((float) *(short*)(buf + 26)) / 10000.0f; //x
-		p_Bone_Data->r_x = ((float) *(short*)(buf + 28)) / 10000.0f; //y
-		p_Bone_Data->r_z = ((float) *(short*)(buf + 30)) / 10000.0f; //z
-
+		proc_Frame_Data(p_Bone_Data, buf, joint_id);
 		return 1;
 	}
 }
@@ -158,6 +159,7 @@ int CSerialDataProc::frameDataProc(struct PtrForFrameAppDoc*pFrameViewDoc, const
 int CSerialDataProc::makeKeyFrame(CObArray * p_frameDataArray,char frame_buf[])
 {
 	char*temp = frame_buf;
+	CalQuaternion temp_quaternion;
 	CFrameData* ptempFrameData = (CFrameData*)p_frameDataArray->GetAt(p_frameDataArray->GetCount() - 1);
 	
 	int tempNum_Bones = ptempFrameData->num_bones;
@@ -173,31 +175,20 @@ int CSerialDataProc::makeKeyFrame(CObArray * p_frameDataArray,char frame_buf[])
 		writeInteger(&temp, temp_BoneDataOfFrame->bone_id);
 		writeInteger(&temp, temp_BoneDataOfFrame->num_frame);
 
-		//if (i == 13) {
-		//	writeFloat(&temp, temp_BoneDataOfFrame->time);
-		//	writeFloat(&temp, temp_BoneDataOfFrame->t_x + 10);
-		//	writeFloat(&temp, temp_BoneDataOfFrame->t_y + 10);
-		//	writeFloat(&temp, temp_BoneDataOfFrame->t_z + 10);
-		//}
-		//else
-		//{
-			writeFloat(&temp, temp_BoneDataOfFrame->time);
-			writeFloat(&temp, temp_BoneDataOfFrame->t_x);
-			writeFloat(&temp, temp_BoneDataOfFrame->t_y);
-			writeFloat(&temp, temp_BoneDataOfFrame->t_z);
-//		}
-
-
+		writeFloat(&temp, temp_BoneDataOfFrame->time);
+		writeFloat(&temp, temp_BoneDataOfFrame->t_x);
+		writeFloat(&temp, temp_BoneDataOfFrame->t_y);
+		writeFloat(&temp, temp_BoneDataOfFrame->t_z);
 
 		//当此节点存在可用的父节点（能够更新数据的父节点）时，计算相对旋转
 		if ((-1 != pMainFrame->joint_num_and_node_num_pair[i]) && (-1 != pMainFrame->joint_num_and_node_num_pair[father_child_joint_pair[i][0]]))
-//		if ((-1 != pMainFrame->joint_num_and_node_num_pair[i]) )
 		{
 			CalQuaternion relative_rotation;
 			if (CALCULATE_RELATIVE_ROTATION_FAIL == calculate_relative_rotation(p_frameDataArray, i, relative_rotation))
 			{
 				return NO_SUTABLE_DATA;
 			}
+			relative_rotation = relative_rotation * bias[i];
 			writeFloat(&temp, relative_rotation.x);
 			writeFloat(&temp, relative_rotation.y);
 			writeFloat(&temp, relative_rotation.z);
@@ -218,17 +209,20 @@ int CSerialDataProc::makeKeyFrame(CObArray * p_frameDataArray,char frame_buf[])
 			else {
 				return NO_SUTABLE_DATA;
 			}
-
-			writeFloat(&temp, temp_BoneDataOfFrame->r_x);
-			writeFloat(&temp, temp_BoneDataOfFrame->r_y);
-			writeFloat(&temp, temp_BoneDataOfFrame->r_z);
-			writeFloat(&temp, temp_BoneDataOfFrame->r_w);
+			temp_quaternion.set(temp_BoneDataOfFrame->r_x, temp_BoneDataOfFrame->r_y, temp_BoneDataOfFrame->r_z, temp_BoneDataOfFrame->r_w);
+			temp_quaternion *= bias[i];
+			writeFloat(&temp, temp_quaternion.x);
+			writeFloat(&temp, temp_quaternion.y);
+			writeFloat(&temp, temp_quaternion.z);
+			writeFloat(&temp, temp_quaternion.w);
 			continue;
 		}
-		writeFloat(&temp, temp_BoneDataOfFrame->r_x);
-		writeFloat(&temp, temp_BoneDataOfFrame->r_y);
-		writeFloat(&temp, temp_BoneDataOfFrame->r_z);
-		writeFloat(&temp, temp_BoneDataOfFrame->r_w);	
+		temp_quaternion.set(temp_BoneDataOfFrame->r_x, temp_BoneDataOfFrame->r_y, temp_BoneDataOfFrame->r_z, temp_BoneDataOfFrame->r_w);
+		temp_quaternion = temp_quaternion * bias[i];
+		writeFloat(&temp, temp_quaternion.x);
+		writeFloat(&temp, temp_quaternion.y);
+		writeFloat(&temp, temp_quaternion.z);
+		writeFloat(&temp, temp_quaternion.w);
 	}
 
 	return 0;
@@ -319,3 +313,125 @@ int CSerialDataProc::calculate_relative_rotation(CObArray * p_frameDataArray,int
 
 
 
+
+
+
+void CSerialDataProc::proc_Frame_Data(CBoneDataOfFrame* p_Bone_Data,const char* buf,int joint_id)
+{
+	CalQuaternion temp,temp_after_colibration;
+	p_Bone_Data->a_x = ((float) *((short*)(buf + 6))) / 10000.0f;
+	p_Bone_Data->a_y = ((float) *((short*)(buf + 8))) / 10000.0f;
+	p_Bone_Data->a_z = ((float) *((short*)(buf + 10))) / 10000.0f;
+
+	p_Bone_Data->g_x = ((float) *((short*)(buf + 12))) / 10.0f;
+	p_Bone_Data->g_y = ((float) *((short*)(buf + 14))) / 10.0f;
+	p_Bone_Data->g_z = ((float) *((short*)(buf + 16))) / 10.0f;
+
+	p_Bone_Data->m_x = ((float) *((short*)(buf + 18))) / 100.0f;
+	p_Bone_Data->m_y = ((float) *((short*)(buf + 20))) / 100.0f;
+	p_Bone_Data->m_z = ((float) *((short*)(buf + 22))) / 100.0f;
+
+	switch (joint_id)
+	{
+	case 1:
+	case 2:
+	case 3:
+	case 4:
+	case 5:
+	case 6:
+		break;
+	case 7:
+		break;
+	case 8:
+	case 9:
+		break;
+	case 10:
+		break;
+	case 11:
+		break;
+	case 12:
+	case 13:
+		p_Bone_Data->r_w = ((float) *((short*)(buf + 24))) / 10000.0f;			// temp_w <- buf_w; 												
+		p_Bone_Data->r_x = ((float) *((short*)(buf + 28))) / 10000.0f;			// temp_x <- buf_y;
+		p_Bone_Data->r_y = ((float) *((short*)(buf + 26))) / 10000.0f;			// temp_y <- buf_x;
+		p_Bone_Data->r_z = ((float) *((short*)(buf + 30))) / 10000.0f;			// temp_z <- buf_z;
+		break;
+	case 14:
+		break;
+	case 15:
+	case 16:
+	case 17:
+		break;
+	case 18:
+		break;
+	case 19:
+	case 20:
+	case 21:
+		break;
+	case 22:
+		break;
+	default:
+		break;
+	}
+}
+
+
+void CSerialDataProc::calculate_bias(CalQuaternion* p_calibration_sum)
+{
+	CalQuaternion temp_quat;
+	for (int i = 0; i < 23; i++)
+	{
+		p_calibration_sum[i].w /= ((float)(pMainFrame->calibration_Length) * (10000.0f));
+		p_calibration_sum[i].x /= ((float)(pMainFrame->calibration_Length) * (10000.0f));
+		p_calibration_sum[i].y /= ((float)(pMainFrame->calibration_Length) * (10000.0f));
+		p_calibration_sum[i].z /= ((float)(pMainFrame->calibration_Length) * (10000.0f));
+		
+		switch (i)
+		{
+		case 1:
+		case 2:
+		case 3:
+		case 4:
+		case 5:
+		case 6:
+			break;
+		case 7:
+			break;
+		case 8:
+		case 9:
+			break;
+		case 10:
+			break;
+		case 11:
+			break;
+		case 12:
+		case 13:
+			temp_quat.w = p_calibration_sum[i].w;
+			temp_quat.y = -(p_calibration_sum[i].x);
+			temp_quat.x = -(p_calibration_sum[i].y);
+			temp_quat.z = -(p_calibration_sum[i].z);
+			bias[i] = temp_quat*standard_Rotation[i];
+			break;
+		case 14:
+			break;
+		case 15:
+		case 16:
+		case 17:
+			break;
+		case 18:
+			break;
+		case 19:
+		case 20:
+		case 21:
+			break;
+		case 22:
+			break;
+		default:
+			break;
+		}
+
+	}
+
+
+
+}

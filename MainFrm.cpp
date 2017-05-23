@@ -41,6 +41,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_COMMAND(ID_OPEN_SERIALPORT, &CMainFrame::OnOpenSerialport)
 	ON_COMMAND(ID_SERIALPORT_SELECT, &CMainFrame::OnSerialportSelect)
 	ON_COMMAND(ID_SERIALPORT_BAUDRATE, &CMainFrame::OnSerialportBaudrate)
+	ON_COMMAND(IDB_CORRECTION, &CMainFrame::OnCorrection)
+	ON_COMMAND(ID_COMBO_CALIBRATION_LENGTH, &CMainFrame::OnComboCalibrationLength)
 END_MESSAGE_MAP()
 
 // CMainFrame 构造/析构
@@ -65,6 +67,9 @@ CMainFrame::CMainFrame()
 
 	joint_num_and_node_num_pair[12] = 5;
 	joint_num_and_node_num_pair[13] = 6;
+
+	Calibration_Flag = false;
+	Calibration_Start_Flag = false;
 }
 
 CMainFrame::~CMainFrame()
@@ -121,8 +126,10 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	p_ComboBox_SerialportbaudRate = DYNAMIC_DOWNCAST(CMFCRibbonComboBox, m_wndRibbonBar.FindByID(ID_SERIALPORT_BAUDRATE));
 	p_Button_OpenSerialPort = DYNAMIC_DOWNCAST(CMFCRibbonButton, m_wndRibbonBar.FindByID(ID_OPEN_SERIALPORT));
 	EnumerateSerialPorts(comm_vector);
-	
 
+	p_ComboBox_Calibration_Length = DYNAMIC_DOWNCAST(CMFCRibbonComboBox, m_wndRibbonBar.FindByID(ID_COMBO_CALIBRATION_LENGTH));
+	p_Button_Calibration_Processing = DYNAMIC_DOWNCAST(CMFCRibbonButton, m_wndRibbonBar.FindByID(IDB_CORRECTION));
+	
 	if (!m_wndStatusBar.Create(this))
 	{
 		TRACE0("未能创建状态栏\n");
@@ -210,6 +217,36 @@ int CMainFrame::set_joint_and_node_pair_negtive(void)
 		joint_num_and_node_num_pair[i] = -1;
 	}
 	return 0;
+}
+
+void CMainFrame::SetCalibrationFlag(void)
+{
+	Calibration_Flag = true;
+}
+
+void CMainFrame::ClearCalibrationFlag(void)
+{
+	Calibration_Flag = false;
+}
+
+bool CMainFrame::GetCalibrationFlag(void)
+{
+	return Calibration_Flag;
+}
+
+void CMainFrame::SetCalibrationStartFlag(void)
+{
+	Calibration_Start_Flag = true;
+}
+
+void CMainFrame::ClearCalibrationStartFlag(void)
+{
+	Calibration_Start_Flag = false;
+}
+
+bool CMainFrame::GetCalibrationStartFlag(void)
+{
+	return Calibration_Start_Flag;
 }
 
 BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
@@ -584,4 +621,38 @@ void CMainFrame::OnSerialportBaudrate()
 		Sleep(10);
 		OnOpenSerialport();
 	}
+}
+
+
+void CMainFrame::OnCorrection()
+{
+	
+	// TODO: 在此添加命令处理程序代码
+	//if (!p_serialPort->is_open()) {
+	//	MessageBox(_T("串口未打开！"));
+	//	return;
+	//}
+
+	if (GetCalibrationFlag())
+	{
+		if (IDNO == MessageBox(_T("否重新校准？"), _T("校准"), MB_YESNO)) {
+			return;
+		}
+	}
+
+	calibration_Length = _ttoi(p_ComboBox_Calibration_Length->GetEditText());
+	if (calibration_Length <= 0) {
+		MessageBox(_T("错误的校准帧长设置！"));
+		return;
+	}
+
+	ClearCalibrationFlag();
+	SetCalibrationStartFlag();
+	return;
+}
+
+
+void CMainFrame::OnComboCalibrationLength()
+{
+	// TODO: 在此添加命令处理程序代码
 }

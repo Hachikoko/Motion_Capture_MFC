@@ -44,8 +44,8 @@ protected: // 仅从序列化创建
 	DECLARE_DYNCREATE(CMainFrame)
 
 private:
+	//串口相关
 	std::vector<CString> comm_vector;
-
 	CMFCRibbonComboBox * p_ComboBox_SerialportSelect;
 	CMFCRibbonComboBox * p_ComboBox_SerialportbaudRate;
 	CMFCRibbonButton * p_Button_OpenSerialPort;
@@ -55,18 +55,32 @@ private:
 	HANDLE hthread_SerialPort;   //串口读线程句柄
 	DWORD threadID;				 //串口读线程ID
 
-	
-
+	//校准相关
+	bool Calibration_Flag;
+	bool Calibration_Start_Flag;
+	CMFCRibbonComboBox * p_ComboBox_Calibration_Length;
+	CMFCRibbonButton * p_Button_Calibration_Processing;
 
 
 // 特性
 public:
 	char joint_num_and_node_num_pair[23];//记录关节号对应的节点号，以关节号为下标（关节数量是固定，这样节点号就不必限定在23以内）
+	int calibration_Length; //记录校准帧长
+	int calibration_Index;
 // 操作
 public:
 	int get_JointID_by_NodeID(const int node_id);
 	int set_JointID_by_NodeID(const int node_id,const int joint_id);
 	int set_joint_and_node_pair_negtive(void);
+
+	//校正控制函数
+	void SetCalibrationFlag(void);
+	void ClearCalibrationFlag(void);
+	bool GetCalibrationFlag(void);
+	void SetCalibrationStartFlag(void);
+	void ClearCalibrationStartFlag(void);
+	bool GetCalibrationStartFlag(void);
+
 
 // 重写
 public:
@@ -122,6 +136,8 @@ public:
 	afx_msg void OnSerialportSelect();
 	afx_msg void OnSerialportBaudrate();
 	afx_msg void OnOpenSerialport();
+	afx_msg void OnCorrection();
+	afx_msg void OnComboCalibrationLength();
 };
 
 

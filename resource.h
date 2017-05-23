@@ -66,6 +66,7 @@
 #define IDB_SERIALPORT_ON_OFF           335
 #define ID_WRITE_PASTEASHYPERLINK       32770
 #define ID_COMBO2                       32783
+#define ID_COMBO_CALIBRATION_LENGTH     32783
 #define ID_COMBO5                       32789
 #define ID_SERIALPORT_SELECT            32789
 #define ID_CHECK2                       32791
@@ -73,18 +74,20 @@
 #define ID_BUTTON2                      32793
 #define ID_OPEN_SERIALPORT              32793
 #define ID_BUTTON3                      32794
+#define IDB_CORRECTION                  32794
 #define ID_BUTTON4                      32795
 #define ID_BUTTON5                      32796
 #define ID_BaudRate                     32800
 #define ID_SERIALPORT_BAUDRATE          32801
 #define ID_SERIALPORT                   32801
+#define ID_COMBO3                       32803
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        338
-#define _APS_NEXT_COMMAND_VALUE         32802
+#define _APS_NEXT_COMMAND_VALUE         32804
 #define _APS_NEXT_CONTROL_VALUE         1002
 #define _APS_NEXT_SYMED_VALUE           310
 #endif

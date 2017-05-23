@@ -29,6 +29,85 @@ static char father_child_joint_pair[23][2] = {
 	21,22
 };
 
+static CalQuaternion standard_Rotation[23] = {
+	CalQuaternion(0,0,0.707106,0.707106),
+	CalQuaternion(0.499999,0.5,0.5,0.500001),
+	CalQuaternion(0,0,0,1),
+	CalQuaternion(0,0,0,1),
+	CalQuaternion(0,0,0,1),
+	CalQuaternion(0,0,0,1),
+	CalQuaternion(0,0,0,1),
+	CalQuaternion(0.632981, -0.000253104,0.774167,-0.000307361),
+	CalQuaternion(0,0.106166,0,0.994348),
+	CalQuaternion(0,0,-0.00908291,0.999959),
+	CalQuaternion(0.706825,0,0,0.707388),
+	CalQuaternion(-0.632981,0.000250957,0.774167,-0.000309116),
+	CalQuaternion(0,-0.106166,0,0.994348),
+	CalQuaternion(0,0,-0.00908291,0.999959),
+	CalQuaternion(-0.706825,0,0,0.707388),
+	CalQuaternion(0.0107283,0.99979,0.00155526,0.0173822),
+	CalQuaternion(0,0,0.0127332,0.999919),
+	CalQuaternion(-0.00177716,0.0173617,-0.00200319,0.999846),
+	CalQuaternion(0,0,-0.707107,0.707107),
+	CalQuaternion(0.0107282,0.99979,-0.00155655,-0.0173836),
+	CalQuaternion(0,0,0.0127332,0.999919),
+	CalQuaternion(0.00177708,-0.0173617,-0.00200319,0.999846),
+	CalQuaternion(0,0,-0.707107,0.707107)
+};
+
+//´æ´¢Ð£×¼Æ«ÖÃ
+static CalQuaternion bias[23] = {
+	CalQuaternion(0,0,0,1),
+	CalQuaternion(0,0,0,1),
+	CalQuaternion(0,0,0,1),
+	CalQuaternion(0,0,0,1),
+	CalQuaternion(0,0,0,1),
+	CalQuaternion(0,0,0,1),
+	CalQuaternion(0,0,0,1),
+	CalQuaternion(0,0,0,1),
+	CalQuaternion(0,0,0,1),
+	CalQuaternion(0,0,0,1),
+	CalQuaternion(0,0,0,1),
+	CalQuaternion(0,0,0,1),
+	CalQuaternion(0,0,0,1),
+	CalQuaternion(0,0,0,1),
+	CalQuaternion(0,0,0,1),
+	CalQuaternion(0,0,0,1),
+	CalQuaternion(0,0,0,1),
+	CalQuaternion(0,0,0,1),
+	CalQuaternion(0,0,0,1),
+	CalQuaternion(0,0,0,1),
+	CalQuaternion(0,0,0,1),
+	CalQuaternion(0,0,0,1),
+	CalQuaternion(0,0,0,1),
+};
+
+static CalQuaternion calibration_sum[23] = {
+	CalQuaternion(0,0,0,0),
+	CalQuaternion(0,0,0,0),
+	CalQuaternion(0,0,0,0),
+	CalQuaternion(0,0,0,0),
+	CalQuaternion(0,0,0,0),
+	CalQuaternion(0,0,0,0),
+	CalQuaternion(0,0,0,0),
+	CalQuaternion(0,0,0,0),
+	CalQuaternion(0,0,0,0),
+	CalQuaternion(0,0,0,0),
+	CalQuaternion(0,0,0,0),
+	CalQuaternion(0,0,0,0),
+	CalQuaternion(0,0,0,0),
+	CalQuaternion(0,0,0,0),
+	CalQuaternion(0,0,0,0),
+	CalQuaternion(0,0,0,0),
+	CalQuaternion(0,0,0,0),
+	CalQuaternion(0,0,0,0),
+	CalQuaternion(0,0,0,0),
+	CalQuaternion(0,0,0,0),
+	CalQuaternion(0,0,0,0),
+	CalQuaternion(0,0,0,0),
+	CalQuaternion(0,0,0,0),
+};
+
 class CSerialDataProc
 {
 public:
@@ -44,7 +123,9 @@ public:
 
 	};
 
-	static unsigned int pre_serialnum;
+
+
+//	static unsigned int pre_serialnum;
 
 	static int dataProc(struct PtrForFrameAppDoc*pFrameViewDoc, const char buf[]);
 	static int frameDataProc(struct PtrForFrameAppDoc*pFrameViewDoc, const char buf[]);
@@ -56,5 +137,8 @@ public:
 	static void writeString(char** dest, const std::string& strValue);
 
 	static int calculate_relative_rotation(CObArray * p_frameDataArray,int joint_id,CalQuaternion&result_data);
+
+	static void proc_Frame_Data(CBoneDataOfFrame* p_Bone_Data, const char* buf, int joint_id);
+	static void calculate_bias(CalQuaternion* p_calibration_bias);
 };
 
