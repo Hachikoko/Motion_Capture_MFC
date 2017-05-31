@@ -105,6 +105,9 @@
     <ClInclude Include="SerialDataProc.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="CalibrationDlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Motion_Capture_MFC.cpp">
@@ -177,6 +180,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="SerialDataProc.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CalibrationDlg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

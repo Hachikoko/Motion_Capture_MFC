@@ -195,6 +195,7 @@
     <ClInclude Include="Cal3DBase.h" />
     <ClInclude Include="Cal3DChild.h" />
     <ClInclude Include="CalendarBar.h" />
+    <ClInclude Include="CalibrationDlg.h" />
     <ClInclude Include="CommonGL.h" />
     <ClInclude Include="FrameData.h" />
     <ClInclude Include="ImageLib.h" />
@@ -226,6 +227,7 @@
     <ClCompile Include="Cal3DBase.cpp" />
     <ClCompile Include="Cal3DChild.cpp" />
     <ClCompile Include="CalendarBar.cpp" />
+    <ClCompile Include="CalibrationDlg.cpp" />
     <ClCompile Include="CommonGL.cpp" />
     <ClCompile Include="FrameData.cpp" />
     <ClCompile Include="light0.cpp" />

@@ -628,10 +628,10 @@ void CMainFrame::OnCorrection()
 {
 	
 	// TODO: 在此添加命令处理程序代码
-	//if (!p_serialPort->is_open()) {
-	//	MessageBox(_T("串口未打开！"));
-	//	return;
-	//}
+	if (!p_serialPort->is_open()) {
+		MessageBox(_T("串口未打开！"));
+		return;
+	}
 
 	if (GetCalibrationFlag())
 	{
@@ -648,6 +648,9 @@ void CMainFrame::OnCorrection()
 
 	ClearCalibrationFlag();
 	SetCalibrationStartFlag();
+
+	//建立校准进度条
+
 	return;
 }
 
@@ -655,4 +658,5 @@ void CMainFrame::OnCorrection()
 void CMainFrame::OnComboCalibrationLength()
 {
 	// TODO: 在此添加命令处理程序代码
+	OnCorrection();
 }

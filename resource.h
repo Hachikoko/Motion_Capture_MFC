@@ -55,6 +55,7 @@
 #define IDS_OUTLOOKBAR                  258
 #define IDS_EDIT_MENU                   306
 #define IDR_RIBBON                      307
+#define IDD_CALIBRATIONDLG              310
 #define IDI_ICON1                       319
 #define IDC_MAGNIFY                     320
 #define IDC_INVALID                     321
@@ -64,6 +65,7 @@
 #define IDI_SERIALPORT_ON               327
 #define IDI_SERIALPORT_OFF              328
 #define IDB_SERIALPORT_ON_OFF           335
+#define IDC_PROGRESS1                   1002
 #define ID_WRITE_PASTEASHYPERLINK       32770
 #define ID_COMBO2                       32783
 #define ID_COMBO_CALIBRATION_LENGTH     32783
@@ -80,15 +82,14 @@
 #define ID_BaudRate                     32800
 #define ID_SERIALPORT_BAUDRATE          32801
 #define ID_SERIALPORT                   32801
-#define ID_COMBO3                       32803
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        338
+#define _APS_NEXT_RESOURCE_VALUE        339
 #define _APS_NEXT_COMMAND_VALUE         32804
-#define _APS_NEXT_CONTROL_VALUE         1002
-#define _APS_NEXT_SYMED_VALUE           310
+#define _APS_NEXT_CONTROL_VALUE         1003
+#define _APS_NEXT_SYMED_VALUE           311
 #endif
 #endif
