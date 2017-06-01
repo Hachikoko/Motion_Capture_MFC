@@ -108,6 +108,12 @@ static CalQuaternion calibration_sum[23] = {
 	CalQuaternion(0,0,0,0),
 };
 
+static short real_calibration_numbs[23] = {0,0,0,0,0,
+									0,0,0,0,0,
+									0,0,0,0,0,
+									0,0,0,0,0,
+									0,0,0 };
+
 class CSerialDataProc
 {
 public:

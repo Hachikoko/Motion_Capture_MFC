@@ -6,7 +6,7 @@
 #include "cal3d/vector.h"
 #include "cal3d/quaternion.h"
 #include "Timer.h"
-#include <stack>
+
 
 static char frame_buf[1024];
 static CMotion_Capture_MFCDoc * pdoc;
@@ -88,6 +88,7 @@ int CSerialDataProc::frameDataProc(struct PtrForFrameAppDoc*pFrameViewDoc, const
 			calibration_sum[joint_id].x += ((float) *((short*)(buf + 26)));
 			calibration_sum[joint_id].y += ((float) *((short*)(buf + 28)));
 			calibration_sum[joint_id].z += (((float) *((short*)(buf + 30))));
+			real_calibration_numbs[joint_id]++;
 			pMainFrame->calibration_Index = calibration_Index;
 			if (buf_index != current_frame_index) {
 				calibration_Index++;
@@ -100,6 +101,7 @@ int CSerialDataProc::frameDataProc(struct PtrForFrameAppDoc*pFrameViewDoc, const
 		pMainFrame->ClearCalibrationStartFlag();
 		pMainFrame->SetCalibrationFlag();
 		calibration_Index = 0;
+		memset(real_calibration_numbs, 0, sizeof(short) * 23);
 		for (int i =0; i < 23;i++)
 		{
 			calibration_sum[i].clear();
@@ -357,18 +359,24 @@ void CSerialDataProc::proc_Frame_Data(CBoneDataOfFrame* p_Bone_Data,const char* 
 		p_Bone_Data->r_w = ((float) *((short*)(buf + 24))) / 10000.0f;			// temp_w <- buf_w; 												
 		p_Bone_Data->r_x = -((float) *((short*)(buf + 28))) / 10000.0f;			// temp_x <- buf_y;
 		p_Bone_Data->r_y = -((float) *((short*)(buf + 26))) / 10000.0f;			// temp_y <- buf_x;
-		p_Bone_Data->r_z = -(((float) *((short*)(buf + 30))) / 10000.0f);			// temp_z <- buf_z;
+		p_Bone_Data->r_z = (((float) *((short*)(buf + 30))) / 10000.0f);			// temp_z <- buf_z;
 		break;
 	case 14:
 		break;
 	case 15:
 	case 16:
+		break;
 	case 17:
 		break;
 	case 18:
 		break;
 	case 19:
 	case 20:
+		p_Bone_Data->r_w = ((float) *((short*)(buf + 24))) / 10000.0f;			// temp_w <- buf_w; 												
+		p_Bone_Data->r_x = -((float) *((short*)(buf + 28))) / 10000.0f;			// temp_x <- buf_y;
+		p_Bone_Data->r_y = -((float) *((short*)(buf + 26))) / 10000.0f;			// temp_y <- buf_x;
+		p_Bone_Data->r_z = -(((float) *((short*)(buf + 30))) / 10000.0f);			// temp_z <- buf_z;
+		break;
 	case 21:
 		break;
 	case 22:
@@ -384,10 +392,10 @@ void CSerialDataProc::calculate_bias(CalQuaternion* p_calibration_sum)
 	CalQuaternion temp_quat, revers_father_quat,relative_rotation, reverse_relative_rotation;
 	for (int i = 0; i < 23; i++)
 	{
-		p_calibration_sum[i].w /= (((float)(pMainFrame->calibration_Length)) * (10000.0f));
-		p_calibration_sum[i].x /= (((float)(pMainFrame->calibration_Length)) * (10000.0f));
-		p_calibration_sum[i].y /= (((float)(pMainFrame->calibration_Length)) * (10000.0f));
-		p_calibration_sum[i].z /= (((float)(pMainFrame->calibration_Length)) * (10000.0f));
+		p_calibration_sum[i].w /= (((float)(real_calibration_numbs[i])) * (10000.0f));
+		p_calibration_sum[i].x /= (((float)(real_calibration_numbs[i])) * (10000.0f));
+		p_calibration_sum[i].y /= (((float)(real_calibration_numbs[i])) * (10000.0f));
+		p_calibration_sum[i].z /= (((float)(real_calibration_numbs[i])) * (10000.0f));
 		
 		switch (i)
 		{
@@ -412,19 +420,19 @@ void CSerialDataProc::calculate_bias(CalQuaternion* p_calibration_sum)
 			temp_quat.w = p_calibration_sum[i].w;  
 			temp_quat.x = p_calibration_sum[i].y;
 			temp_quat.y = p_calibration_sum[i].x;
-			temp_quat.z = p_calibration_sum[i].z;
+			temp_quat.z = -p_calibration_sum[i].z;
 			bias[i] = temp_quat*standard_Rotation[i];
 			break;
 		case 13:
 			revers_father_quat.w = p_calibration_sum[12].w;
 			revers_father_quat.x = p_calibration_sum[12].y;
 			revers_father_quat.y = p_calibration_sum[12].x;
-			revers_father_quat.z = p_calibration_sum[12].z;
+			revers_father_quat.z = -p_calibration_sum[12].z;
 
 			temp_quat.w = p_calibration_sum[i].w;
 			temp_quat.x = -p_calibration_sum[i].y;
 			temp_quat.y = -p_calibration_sum[i].x;
-			temp_quat.z = -p_calibration_sum[i].z;
+			temp_quat.z = p_calibration_sum[i].z;
 
 			relative_rotation = revers_father_quat*temp_quat;
 			reverse_relative_rotation.set(-relative_rotation.x, -relative_rotation.y, -relative_rotation.z, relative_rotation.w);
