@@ -17,6 +17,7 @@
 #include "SerialDataProc.h"
 #include "MainFrm.h"
 
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -41,7 +42,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_COMMAND(ID_OPEN_SERIALPORT, &CMainFrame::OnOpenSerialport)
 	ON_COMMAND(ID_SERIALPORT_SELECT, &CMainFrame::OnSerialportSelect)
 	ON_COMMAND(ID_SERIALPORT_BAUDRATE, &CMainFrame::OnSerialportBaudrate)
-	ON_COMMAND(IDB_CORRECTION, &CMainFrame::OnCorrection)
+	ON_COMMAND(IDB_CORRECTION, &CMainFrame::OnCalibration)
 	ON_COMMAND(ID_COMBO_CALIBRATION_LENGTH, &CMainFrame::OnComboCalibrationLength)
 END_MESSAGE_MAP()
 
@@ -50,6 +51,7 @@ END_MESSAGE_MAP()
 CMainFrame::CMainFrame()
 :p_ComboBox_SerialportSelect(nullptr)
 , p_Motion_Capture_MFCView(nullptr)
+, p_calibration_Dlg(nullptr)
 {
 	// TODO: 在此添加成员初始化代码
 	theApp.m_nAppLook = theApp.GetInt(_T("ApplicationLook"), ID_VIEW_APPLOOK_OFF_2007_BLACK);
@@ -59,6 +61,7 @@ CMainFrame::CMainFrame()
 	ptrForFrameAppDoc.pDoc = nullptr;
 	ptrForFrameAppDoc.pMainFrame = nullptr;
 	ptrForFrameAppDoc.pView = nullptr;
+
 
 	for (int i = 0; i < 23;i++)
 	{
@@ -70,10 +73,13 @@ CMainFrame::CMainFrame()
 
 	Calibration_Flag = false;
 	Calibration_Start_Flag = false;
+
+	calibration_Index = 0;
 }
 
 CMainFrame::~CMainFrame()
 {
+//	delete p_calibration_Dlg;
 }
 static unsigned int pre_n = 0;
 DWORD WINAPI readPortFunc(LPVOID lpParameter)
@@ -624,7 +630,7 @@ void CMainFrame::OnSerialportBaudrate()
 }
 
 
-void CMainFrame::OnCorrection()
+void CMainFrame::OnCalibration()
 {
 	
 	// TODO: 在此添加命令处理程序代码
@@ -650,6 +656,41 @@ void CMainFrame::OnCorrection()
 	SetCalibrationStartFlag();
 
 	//建立校准进度条
+	if (p_calibration_Dlg == nullptr) {
+		p_calibration_Dlg = new CCalibrationDlg();
+		p_calibration_Dlg->Create(IDD_CALIBRATIONDLG, this);
+	}
+	CRect rcDlg;
+	p_calibration_Dlg->GetWindowRect(rcDlg);
+	ScreenToClient(rcDlg);
+	int screen_x = GetSystemMetrics(SM_CXSCREEN);
+	int screen_y = GetSystemMetrics(SM_CYSCREEN);
+
+	//调整对话框出现位置，
+	int dlg_Pos_x, dlg_Pos_y;
+	if (((float)screen_x) - (((float)screen_x) * 0.7) < (float)rcDlg.Width()){
+		dlg_Pos_x = ((float)screen_x - (float)rcDlg.Width());
+	}
+	else
+	{
+		dlg_Pos_x = ((float)screen_x) * 0.7;
+	}
+
+	if (((float)screen_y) - (((float)screen_y) * 0.7) < (float)rcDlg.Height()) {
+		dlg_Pos_y = ((float)screen_y - (float)rcDlg.Height());
+	}
+	else
+	{
+		dlg_Pos_y = ((float)screen_y) * 0.7;
+	}
+
+
+	p_calibration_Dlg->SetWindowPos(&CCalibrationDlg::wndTopMost, dlg_Pos_x, dlg_Pos_y, rcDlg.Width(), rcDlg.Height(), SWP_NOSIZE);
+	
+	p_calibration_Dlg->ShowWindow(SW_SHOW);
+
+
+
 
 	return;
 }
@@ -658,5 +699,5 @@ void CMainFrame::OnCorrection()
 void CMainFrame::OnComboCalibrationLength()
 {
 	// TODO: 在此添加命令处理程序代码
-	OnCorrection();
+	OnCalibration();
 }

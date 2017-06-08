@@ -20,6 +20,7 @@
 #include <iostream>
 #include "Motion_Capture_MFCView.h"
 #include "Motion_Capture_MFCDoc.h"
+#include "CalibrationDlg.h"
 
 DWORD WINAPI readPortFunc(LPVOID lpParameter);
 class CMainFrame;
@@ -58,6 +59,8 @@ private:
 	//校准相关
 	bool Calibration_Flag;
 	bool Calibration_Start_Flag;
+
+
 	CMFCRibbonComboBox * p_ComboBox_Calibration_Length;
 	CMFCRibbonButton * p_Button_Calibration_Processing;
 
@@ -67,6 +70,8 @@ public:
 	char joint_num_and_node_num_pair[23];//记录关节号对应的节点号，以关节号为下标（关节数量是固定，这样节点号就不必限定在23以内）
 	int calibration_Length; //记录校准帧长
 	int calibration_Index;
+
+	CCalibrationDlg* p_calibration_Dlg;
 // 操作
 public:
 	int get_JointID_by_NodeID(const int node_id);
@@ -136,7 +141,7 @@ public:
 	afx_msg void OnSerialportSelect();
 	afx_msg void OnSerialportBaudrate();
 	afx_msg void OnOpenSerialport();
-	afx_msg void OnCorrection();
+	afx_msg void OnCalibration();
 	afx_msg void OnComboCalibrationLength();
 };
 

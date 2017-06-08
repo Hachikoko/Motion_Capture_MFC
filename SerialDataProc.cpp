@@ -10,9 +10,9 @@
 
 static char frame_buf[1024];
 static CMotion_Capture_MFCDoc * pdoc;
-static CMainFrame*pMainFrame;
-static OpenGLWindow* pOpenGLView;
-static CObArray* p_frameDataArray;
+CMainFrame*pMainFrame;
+OpenGLWindow* pOpenGLView;
+CObArray* p_frameDataArray;
 
 
 CSerialDataProc::CSerialDataProc()
@@ -96,8 +96,10 @@ int CSerialDataProc::frameDataProc(struct PtrForFrameAppDoc*pFrameViewDoc, const
 			}
 			return 0;
 		}
+
 		//计算偏差
 		calculate_bias(calibration_sum);
+
 		pMainFrame->ClearCalibrationStartFlag();
 		pMainFrame->SetCalibrationFlag();
 		calibration_Index = 0;
@@ -123,6 +125,7 @@ int CSerialDataProc::frameDataProc(struct PtrForFrameAppDoc*pFrameViewDoc, const
 				if (-1 != id) {
 					//执行动画
 					pOpenGLView->pCal3DchildModel->executeAction(id, 0.0f, 0.0f);
+
 				}		
 			}
 		}
@@ -132,7 +135,7 @@ int CSerialDataProc::frameDataProc(struct PtrForFrameAppDoc*pFrameViewDoc, const
 		//获取间隔时间
 		float time = timer_for_serial->GetElapsedSeconds();
 
-		pFrameData = new CFrameData(pOpenGLView->pCal3DbaseModel, time * 3, 23);
+		pFrameData = new CFrameData(pOpenGLView->pCal3DbaseModel, time * 10, 23);
 		int joint_id = pMainFrame->get_JointID_by_NodeID(buf[1]);
 		if (joint_id == -1)
 		{
