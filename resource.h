@@ -74,6 +74,7 @@
 #define ID_COMBO5                       32789
 #define ID_SERIALPORT_SELECT            32789
 #define ID_CHECK2                       32791
+#define ID_CHECK_TRANSMISSION_SWITCH    32791
 #define ID_CHECK3                       32792
 #define ID_BUTTON2                      32793
 #define ID_OPEN_SERIALPORT              32793
@@ -90,7 +91,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        339
-#define _APS_NEXT_COMMAND_VALUE         32804
+#define _APS_NEXT_COMMAND_VALUE         32809
 #define _APS_NEXT_CONTROL_VALUE         1006
 #define _APS_NEXT_SYMED_VALUE           311
 #endif

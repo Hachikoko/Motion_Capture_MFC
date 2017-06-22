@@ -84,10 +84,21 @@ int CSerialDataProc::frameDataProc(struct PtrForFrameAppDoc*pFrameViewDoc, const
 		static int calibration_Index = 0;
 		if (calibration_Index < pMainFrame->calibration_Length) {
 			int joint_id = pMainFrame->get_JointID_by_NodeID(buf[1]);
-			calibration_sum[joint_id].w += ((float) *((short*)(buf + 24)));
-			calibration_sum[joint_id].x += ((float) *((short*)(buf + 26)));
-			calibration_sum[joint_id].y += ((float) *((short*)(buf + 28)));
-			calibration_sum[joint_id].z += (((float) *((short*)(buf + 30))));
+			if (pMainFrame->ptrForFrameAppDoc.wired_flag == true)
+			{
+				calibration_sum[joint_id].w += (*((float*)(buf + 24)));
+				calibration_sum[joint_id].x += (*((float*)(buf + 28)));
+				calibration_sum[joint_id].y += (*((float*)(buf + 32)));
+				calibration_sum[joint_id].z += (*((float*)(buf + 36)));
+			}
+			else
+			{
+				calibration_sum[joint_id].w += ((float) *((short*)(buf + 24)));
+				calibration_sum[joint_id].x += ((float) *((short*)(buf + 26)));
+				calibration_sum[joint_id].y += ((float) *((short*)(buf + 28)));
+				calibration_sum[joint_id].z += ((float) *((short*)(buf + 30)));
+			}
+
 			real_calibration_numbs[joint_id]++;
 			pMainFrame->calibration_Index = calibration_Index;
 			if (buf_index != current_frame_index) {
@@ -327,17 +338,37 @@ int CSerialDataProc::calculate_relative_rotation(CObArray * p_frameDataArray,int
 void CSerialDataProc::proc_Frame_Data(CBoneDataOfFrame* p_Bone_Data,const char* buf,int joint_id)
 {
 	CalQuaternion temp,temp_after_colibration;
-	p_Bone_Data->a_x = ((float) *((short*)(buf + 6))) / 10000.0f;
-	p_Bone_Data->a_y = ((float) *((short*)(buf + 8))) / 10000.0f;
-	p_Bone_Data->a_z = ((float) *((short*)(buf + 10))) / 10000.0f;
 
-	p_Bone_Data->g_x = ((float) *((short*)(buf + 12))) / 10.0f;
-	p_Bone_Data->g_y = ((float) *((short*)(buf + 14))) / 10.0f;
-	p_Bone_Data->g_z = ((float) *((short*)(buf + 16))) / 10.0f;
+	if (true == pMainFrame->ptrForFrameAppDoc.wired_flag)
+	{
+		p_Bone_Data->a_x = ((float)*((short*)(buf + 6))) * 0.000244f;
+		p_Bone_Data->a_y = ((float)*((short*)(buf + 8))) * 0.000244f;
+		p_Bone_Data->a_z = ((float)*((short*)(buf + 10))) * 0.000244f;
 
-	p_Bone_Data->m_x = ((float) *((short*)(buf + 18))) / 100.0f;
-	p_Bone_Data->m_y = ((float) *((short*)(buf + 20))) / 100.0f;
-	p_Bone_Data->m_z = ((float) *((short*)(buf + 22))) / 100.0f;
+		p_Bone_Data->g_x = ((float)*((short*)(buf + 12))) * 0.061035f;
+		p_Bone_Data->g_y = ((float) *((short*)(buf + 14))) * 0.061035f;
+		p_Bone_Data->g_z = ((float) *((short*)(buf + 16))) * 0.061035f;
+
+		p_Bone_Data->m_x = ((float) *((short*)(buf + 18))) * 6.0f;
+		p_Bone_Data->m_y = ((float) *((short*)(buf + 20))) / 6.0f;
+		p_Bone_Data->m_z = ((float) *((short*)(buf + 22))) / 6.0f;
+	}
+	else
+	{
+		p_Bone_Data->a_x = ((float) *((short*)(buf + 6))) / 10000.0f;
+		p_Bone_Data->a_y = ((float) *((short*)(buf + 8))) / 10000.0f;
+		p_Bone_Data->a_z = ((float) *((short*)(buf + 10))) / 10000.0f;
+
+		p_Bone_Data->g_x = ((float) *((short*)(buf + 12))) / 10.0f;
+		p_Bone_Data->g_y = ((float) *((short*)(buf + 14))) / 10.0f;
+		p_Bone_Data->g_z = ((float) *((short*)(buf + 16))) / 10.0f;
+
+		p_Bone_Data->m_x = ((float) *((short*)(buf + 18))) / 100.0f;
+		p_Bone_Data->m_y = ((float) *((short*)(buf + 20))) / 100.0f;
+		p_Bone_Data->m_z = ((float) *((short*)(buf + 22))) / 100.0f;
+	}
+
+
 
 	switch (joint_id)
 	{
@@ -359,10 +390,21 @@ void CSerialDataProc::proc_Frame_Data(CBoneDataOfFrame* p_Bone_Data,const char* 
 		break;
 	case 12:
 	case 13:
-		p_Bone_Data->r_w = ((float) *((short*)(buf + 24))) / 10000.0f;			// temp_w <- buf_w; 												
-		p_Bone_Data->r_x = -((float) *((short*)(buf + 28))) / 10000.0f;			// temp_x <- buf_y;
-		p_Bone_Data->r_y = -((float) *((short*)(buf + 26))) / 10000.0f;			// temp_y <- buf_x;
-		p_Bone_Data->r_z = (((float) *((short*)(buf + 30))) / 10000.0f);			// temp_z <- buf_z;
+		if (true == pMainFrame->ptrForFrameAppDoc.wired_flag)
+		{
+			p_Bone_Data->r_w = *((float*)(buf + 24));			// temp_w <- buf_w; 												
+			p_Bone_Data->r_x = -(*((float*)(buf + 28)));			// temp_x <- buf_y;
+			p_Bone_Data->r_y = -(*((float*)(buf + 26)));			// temp_y <- buf_x;
+			p_Bone_Data->r_z = *((float*)(buf + 30));			// temp_z <- buf_z;
+		} 
+		else
+		{
+			p_Bone_Data->r_w = ((float) *((short*)(buf + 24))) / 10000.0f;			// temp_w <- buf_w; 												
+			p_Bone_Data->r_x = -((float) *((short*)(buf + 28))) / 10000.0f;			// temp_x <- buf_y;
+			p_Bone_Data->r_y = -((float) *((short*)(buf + 26))) / 10000.0f;			// temp_y <- buf_x;
+			p_Bone_Data->r_z = (((float) *((short*)(buf + 30))) / 10000.0f);			// temp_z <- buf_z;
+		}
+
 		break;
 	case 14:
 		break;
@@ -375,10 +417,10 @@ void CSerialDataProc::proc_Frame_Data(CBoneDataOfFrame* p_Bone_Data,const char* 
 		break;
 	case 19:
 	case 20:
-		p_Bone_Data->r_w = ((float) *((short*)(buf + 24))) / 10000.0f;			// temp_w <- buf_w; 												
-		p_Bone_Data->r_x = -((float) *((short*)(buf + 28))) / 10000.0f;			// temp_x <- buf_y;
-		p_Bone_Data->r_y = -((float) *((short*)(buf + 26))) / 10000.0f;			// temp_y <- buf_x;
-		p_Bone_Data->r_z = -(((float) *((short*)(buf + 30))) / 10000.0f);			// temp_z <- buf_z;
+		//p_Bone_Data->r_w = ((float) *((short*)(buf + 24))) / 10000.0f;			// temp_w <- buf_w; 												
+		//p_Bone_Data->r_x = -((float) *((short*)(buf + 28))) / 10000.0f;			// temp_x <- buf_y;
+		//p_Bone_Data->r_y = -((float) *((short*)(buf + 26))) / 10000.0f;			// temp_y <- buf_x;
+		//p_Bone_Data->r_z = -(((float) *((short*)(buf + 30))) / 10000.0f);			// temp_z <- buf_z;
 		break;
 	case 21:
 		break;
@@ -395,10 +437,21 @@ void CSerialDataProc::calculate_bias(CalQuaternion* p_calibration_sum)
 	CalQuaternion temp_quat, revers_father_quat,relative_rotation, reverse_relative_rotation;
 	for (int i = 0; i < 23; i++)
 	{
-		p_calibration_sum[i].w /= (((float)(real_calibration_numbs[i])) * (10000.0f));
-		p_calibration_sum[i].x /= (((float)(real_calibration_numbs[i])) * (10000.0f));
-		p_calibration_sum[i].y /= (((float)(real_calibration_numbs[i])) * (10000.0f));
-		p_calibration_sum[i].z /= (((float)(real_calibration_numbs[i])) * (10000.0f));
+		if (true == pMainFrame->ptrForFrameAppDoc.wired_flag)
+		{
+			p_calibration_sum[i].w /= (float)(real_calibration_numbs[i]);
+			p_calibration_sum[i].x /= (float)(real_calibration_numbs[i]);
+			p_calibration_sum[i].y /= (float)(real_calibration_numbs[i]);
+			p_calibration_sum[i].z /= (float)(real_calibration_numbs[i]);
+		} 
+		else
+		{
+			p_calibration_sum[i].w /= (((float)(real_calibration_numbs[i])) * (10000.0f));
+			p_calibration_sum[i].x /= (((float)(real_calibration_numbs[i])) * (10000.0f));
+			p_calibration_sum[i].y /= (((float)(real_calibration_numbs[i])) * (10000.0f));
+			p_calibration_sum[i].z /= (((float)(real_calibration_numbs[i])) * (10000.0f));
+		}
+
 		
 		switch (i)
 		{

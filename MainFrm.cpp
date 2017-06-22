@@ -44,6 +44,9 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_COMMAND(ID_SERIALPORT_BAUDRATE, &CMainFrame::OnSerialportBaudrate)
 	ON_COMMAND(IDB_CORRECTION, &CMainFrame::OnCalibration)
 	ON_COMMAND(ID_COMBO_CALIBRATION_LENGTH, &CMainFrame::OnComboCalibrationLength)
+	ON_COMMAND(ID_CHECK_TRANSMISSION_SWITCH, &CMainFrame::OnCheckTransmissionSwitch)
+	ON_UPDATE_COMMAND_UI(ID_CHECK_TRANSMISSION_SWITCH, &CMainFrame::OnUpdateCheckTransmissionSwitch)
+	ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 // CMainFrame 构造/析构
@@ -61,7 +64,7 @@ CMainFrame::CMainFrame()
 	ptrForFrameAppDoc.pDoc = nullptr;
 	ptrForFrameAppDoc.pMainFrame = nullptr;
 	ptrForFrameAppDoc.pView = nullptr;
-
+	ptrForFrameAppDoc.wired_flag = false;
 
 	for (int i = 0; i < 23;i++)
 	{
@@ -85,28 +88,45 @@ static unsigned int pre_n = 0;
 DWORD WINAPI readPortFunc(LPVOID lpParameter)
 {
 	char buf[1024];
-	int n = 32;
+	int n;
+	unsigned int wired_transmission_index = 0;
+	struct PtrForFrameAppDoc * p_ForFrameAppDoc = (struct PtrForFrameAppDoc *)lpParameter;
 	CSerialPort*p_serialPort = CSerialPort::GetSerialPortInstance();
-	memset(buf, 0, n);
+	memset(buf, 0, 1024);
 	while (p_serialPort->is_open())
 	{
-		n = 32;
+		n = p_ForFrameAppDoc->wired_flag == true ? 1024 : 32;
+
 		if (OK_SERIALPORT != p_serialPort->readSerialPort(buf, n)) {
 			continue;
 		}
 		else
 		{
 			if (n > 0) {
-				if (n != 32) {
-					TRACE("n = %d,type:%c\r\n", n, buf[0]);
+				if (n == 32 && buf[0] == 'D') {
+					CSerialDataProc::dataProc(p_ForFrameAppDoc, buf);
 				}
-				else {
-					//TRACE("type:%c,index:%d,ID:%d,w:%d,x:%d,y:%d,z:%d\r\n", buf[0], buf[1], *(int*)(buf + 2), *(short*)(buf + 24), *(short*)(buf + 26), *(short*)(buf + 28), *(short*)(buf + 30));
-					CSerialDataProc::dataProc((struct PtrForFrameAppDoc *)lpParameter, buf);
-				}
-//				
+				else if(buf[0] == '#'&& buf[2] == '#'){
+					int n = buf[1];
+					char node_data_buf[40];
+					wired_transmission_index++;
+					for (int i = 0;i < n;i++)
+					{
+						if (1 == buf[i * 41 + 3]) {
+							memcpy(node_data_buf, (buf + i * 41 + 4), 40);
+							*((unsigned int*)node_data_buf + 2) = wired_transmission_index;
+//							CSerialDataProc::dataProc(p_ForFrameAppDoc, node_data_buf);
+							TRACE("%c_%d_%d\r\n", node_data_buf[0], node_data_buf[1], wired_transmission_index);
+						}
+						memset(node_data_buf, 0, 40);
+					}	
 
-//				TRACE("type:%c,index:%d,ID:%d,w:%d,x:%d,y:%d,z:%d\r\n", buf[0], buf[1], *(int*)(buf + 2), *(short*)(buf + 24), *(short*)(buf + 26), *(short*)(buf + 28), *(short*)(buf + 30));
+//					p_ForFrameAppDoc->pMainFrame->Send_by_SerialPort("S", 1);
+
+				}
+				else
+				{
+				}
 			}
 			else
 			{
@@ -131,6 +151,9 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	p_ComboBox_SerialportSelect = DYNAMIC_DOWNCAST(CMFCRibbonComboBox, m_wndRibbonBar.FindByID(ID_SERIALPORT_SELECT));
 	p_ComboBox_SerialportbaudRate = DYNAMIC_DOWNCAST(CMFCRibbonComboBox, m_wndRibbonBar.FindByID(ID_SERIALPORT_BAUDRATE));
 	p_Button_OpenSerialPort = DYNAMIC_DOWNCAST(CMFCRibbonButton, m_wndRibbonBar.FindByID(ID_OPEN_SERIALPORT));
+	p_CheckBox_Transmission_Model_Switch = DYNAMIC_DOWNCAST(CMFCRibbonCheckBox, m_wndRibbonBar.FindByID(ID_CHECK_TRANSMISSION_SWITCH));
+
+
 	EnumerateSerialPorts(comm_vector);
 
 	p_ComboBox_Calibration_Length = DYNAMIC_DOWNCAST(CMFCRibbonComboBox, m_wndRibbonBar.FindByID(ID_COMBO_CALIBRATION_LENGTH));
@@ -305,6 +328,7 @@ BOOL CMainFrame::CreateOutlookBar(CMFCOutlookBar& bar, UINT uiID, CMFCShellTreeC
 	bNameValid = strTemp.LoadString(IDS_CALENDAR);
 	ASSERT(bNameValid);
 	pOutlookBar->AddControl(&calendar, strTemp, 3, TRUE, dwStyle);
+
 
 	bar.SetPaneStyle(bar.GetPaneStyle() | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
 
@@ -541,7 +565,17 @@ void CMainFrame::OnOpenSerialport()
 		p_Button_OpenSerialPort->SetImageIndex(1, true);
 		//开启读串口线程
 		hthread_SerialPort = CreateThread(NULL, 0, readPortFunc, &ptrForFrameAppDoc, 0, &threadID);
-		TRACE("%d\n", threadID);
+
+		if (ptrForFrameAppDoc.wired_flag) {
+			Sleep(10);
+			p_serialPort->writeSerialPort("N", 1);
+
+			if (0 == SetTimer(1, 20, NULL)) {
+				MessageBox(_T("有线定时器初始化错误！"));
+				return;
+			}
+		}
+
 
 	}
 	else
@@ -549,6 +583,11 @@ void CMainFrame::OnOpenSerialport()
 		p_serialPort->closeSerialPort();
 		p_Button_OpenSerialPort->SetText(_T("打开"));
 		p_Button_OpenSerialPort->SetImageIndex(0, true);
+
+		if (ptrForFrameAppDoc.wired_flag) {
+			KillTimer(1);
+		}
+
 		return;
 	}
 
@@ -700,4 +739,56 @@ void CMainFrame::OnComboCalibrationLength()
 {
 	// TODO: 在此添加命令处理程序代码
 	OnCalibration();
+}
+
+
+void CMainFrame::OnCheckTransmissionSwitch()
+{
+	// TODO: 在此添加命令处理程序代码
+	if (p_serialPort->is_open()) {
+		AfxMessageBox(_T("请先关闭串口！"));
+		return;
+	}
+	ptrForFrameAppDoc.wired_flag = !ptrForFrameAppDoc.wired_flag;
+}
+
+
+void CMainFrame::OnUpdateCheckTransmissionSwitch(CCmdUI *pCmdUI)
+{
+	// TODO: 在此添加命令更新用户界面处理程序代码
+	pCmdUI->SetCheck(ptrForFrameAppDoc.wired_flag);
+}
+
+
+bool CMainFrame::isCheckBoxTransmission()
+{
+	return this->p_CheckBox_Transmission_Model_Switch->IsChecked(); 
+}
+
+
+void CMainFrame::OnTimer(UINT_PTR nIDEvent)
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+
+	if (1 == nIDEvent) {
+		p_serialPort->writeSerialPort("S", 1);
+	}
+
+	CFrameWndEx::OnTimer(nIDEvent);
+}
+
+
+void CMainFrame::Send_by_SerialPort(char* buf, int length)
+{
+	p_serialPort->writeSerialPort(buf, length);
+}
+
+
+BOOL CMainFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
+{
+	// TODO: 在此添加专用代码和/或调用基类
+
+//	m_wndSplitter.Create(this, 2, 2, CSize(10, 10), pContext);
+
+	return CFrameWndEx::OnCreateClient(lpcs, pContext);
 }

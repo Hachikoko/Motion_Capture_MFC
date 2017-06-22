@@ -40,6 +40,7 @@ BEGIN_MESSAGE_MAP(CMotion_Capture_MFCView, CView)
 	ON_WM_RBUTTONUP()
 	ON_WM_MOUSEMOVE()
 	ON_WM_CREATE()
+	ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 // CMotion_Capture_MFCView 构造/析构
@@ -154,10 +155,10 @@ int CMotion_Capture_MFCView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	// TODO:  在此添加您专用的创建代码
 
-	//Intitialize OpenGL window
-	CRect rcClient(100,100,800,600);
-	//GetClientRect(&rcClient);
-	//rcClient.DeflateRect(7, 32, 207, 46);
+	
+	CRect rcClient(0,0,800,600);
+
+//	CRect rcClient(0, 0, 0, 0);
 
 	//Create the OpenGLw window here
 	if (!m_view.Create(NULL, NULL, WS_BORDER | WS_VISIBLE | WS_CHILD , rcClient, this, 0))
@@ -165,6 +166,7 @@ int CMotion_Capture_MFCView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		PostQuitMessage(0);
 		return FALSE;
 	}
+
 	GLenum err = glewInit();
 	if( err != GLEW_OK )
 		AfxMessageBox( _T("Couldn't initialize GLEW!") );
@@ -184,19 +186,25 @@ int CMotion_Capture_MFCView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 			}
 		}
 	}
-	
 
 	m_view.InitAll();
 	m_view.ShowWindow(SW_SHOW);
-//	if (m_view.pCal3DchildModel->GetAnimationCount())
-//	{
-//		m_view.pCal3DchildModel->clearCycle(m_view.pCal3DchildModel->GetCurrentAnimationId(), 0.0f);
-//		m_view.pCal3DchildModel->SetCurrentAnimationId(2);
-////		m_view.pCal3DchildModel->blendCycle(m_view.pCal3DchildModel->GetCurrentAnimationId(), 1.0f, 0.0f);
-//		m_view.pCal3DchildModel->executeAction(m_view.pCal3DchildModel->GetCurrentAnimationId(), 1.0f, 0.0f);
-//
-//	}
-	
 
 	return true;
+}
+
+
+void CMotion_Capture_MFCView::OnSize(UINT nType, int cx, int cy)
+{
+	CView::OnSize(nType, cx, cy);
+
+	// TODO: 在此处添加消息处理程序代码
+
+	CRect temp;
+
+	GetClientRect(temp);
+
+	m_view.MoveWindow(0, 0, temp.Width(), temp.Height());
+	
+
 }

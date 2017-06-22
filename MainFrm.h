@@ -29,6 +29,8 @@ struct PtrForFrameAppDoc
 	CMainFrame*pMainFrame;
 	CMotion_Capture_MFCView*pView;
 	CMotion_Capture_MFCDoc*pDoc;
+
+	bool wired_flag;
 };
 
 class COutlookBar : public CMFCOutlookBar
@@ -52,6 +54,8 @@ private:
 	CMFCRibbonButton * p_Button_OpenSerialPort;
 	CMotion_Capture_MFCView *p_Motion_Capture_MFCView;
 
+	
+
 	CSerialPort*p_serialPort;    //串口类指针
 	HANDLE hthread_SerialPort;   //串口读线程句柄
 	DWORD threadID;				 //串口读线程ID
@@ -63,7 +67,11 @@ private:
 
 	CMFCRibbonComboBox * p_ComboBox_Calibration_Length;
 	CMFCRibbonButton * p_Button_Calibration_Processing;
+	CMFCRibbonCheckBox * p_CheckBox_Transmission_Model_Switch;
 
+	//子窗口相关
+	CSplitterWnd m_wndSplitter;
+		
 
 // 特性
 public:
@@ -143,6 +151,12 @@ public:
 	afx_msg void OnOpenSerialport();
 	afx_msg void OnCalibration();
 	afx_msg void OnComboCalibrationLength();
+	afx_msg void OnCheckTransmissionSwitch();
+	afx_msg void OnUpdateCheckTransmissionSwitch(CCmdUI *pCmdUI);
+	bool isCheckBoxTransmission();
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	void Send_by_SerialPort(char* buf, int length);
+	virtual BOOL OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext);
 };
 
 
