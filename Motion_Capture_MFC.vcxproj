@@ -196,6 +196,7 @@
     <ClInclude Include="Cal3DChild.h" />
     <ClInclude Include="CalendarBar.h" />
     <ClInclude Include="CalibrationDlg.h" />
+    <ClInclude Include="ComboInListView.h" />
     <ClInclude Include="CommonGL.h" />
     <ClInclude Include="FrameData.h" />
     <ClInclude Include="ImageLib.h" />
@@ -203,18 +204,22 @@
     <ClInclude Include="light1.h" />
     <ClInclude Include="light2.h" />
     <ClInclude Include="LightModel.h" />
+    <ClInclude Include="listeditctrl.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="memdc.h" />
     <ClInclude Include="Motion_Capture_MFC.h" />
     <ClInclude Include="Motion_Capture_MFCDoc.h" />
     <ClInclude Include="Motion_Capture_MFCView.h" />
+    <ClInclude Include="MyButton.h" />
+    <ClInclude Include="MySuperGrid.h" />
     <ClInclude Include="OpenGL.h" />
     <ClInclude Include="OpenGLWindow.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SerialDataProc.h" />
     <ClInclude Include="SerialPort.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="SuperGridCtrl.h" />
     <ClInclude Include="Targa.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="tga.h" />
@@ -228,17 +233,21 @@
     <ClCompile Include="Cal3DChild.cpp" />
     <ClCompile Include="CalendarBar.cpp" />
     <ClCompile Include="CalibrationDlg.cpp" />
+    <ClCompile Include="ComboInListView.cpp" />
     <ClCompile Include="CommonGL.cpp" />
     <ClCompile Include="FrameData.cpp" />
     <ClCompile Include="light0.cpp" />
     <ClCompile Include="light1.cpp" />
     <ClCompile Include="light2.cpp" />
     <ClCompile Include="LightModel.cpp" />
+    <ClCompile Include="listeditctrl.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Motion_Capture_MFC.cpp" />
     <ClCompile Include="Motion_Capture_MFCDoc.cpp" />
     <ClCompile Include="Motion_Capture_MFCView.cpp" />
+    <ClCompile Include="MyButton.cpp" />
+    <ClCompile Include="MySuperGrid.cpp" />
     <ClCompile Include="OpenGLWindow.cpp" />
     <ClCompile Include="SerialDataProc.cpp" />
     <ClCompile Include="SerialPort.cpp" />
@@ -248,6 +257,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="SuperGridCtrl.cpp" />
     <ClCompile Include="Targa.cpp" />
     <ClCompile Include="tga.cpp" />
     <ClCompile Include="Timer.cpp" />
@@ -268,9 +278,16 @@
     <ResourceCompile Include="Motion_Capture_MFC.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="C:\Users\10240\Desktop\Button_warning_icon_32px_1081641_easyicon.net.png" />
+    <Image Include="C:\Users\10240\Desktop\Green_Light.bmp" />
+    <Image Include="C:\Users\10240\Desktop\green_light.png" />
+    <Image Include="C:\Users\10240\Desktop\Red_Light.bmp" />
+    <Image Include="res\bitmap1.bmp" />
     <Image Include="res\buttons.bmp" />
     <Image Include="res\filelarge.bmp" />
     <Image Include="res\filesmall.bmp" />
+    <Image Include="res\Green_Light.bmp" />
+    <Image Include="res\Green_Red_Light.bmp" />
     <Image Include="res\icon1.ico" />
     <Image Include="res\icon2.ico" />
     <Image Include="res\info.bmp" />
@@ -286,6 +303,8 @@
     <Image Include="res\power_button_64px_1205835_easyicon.net.ico" />
     <Image Include="res\power_button_64px_1206378_easyicon.net.ico" />
     <Image Include="res\prohibit_24px.ico" />
+    <Image Include="res\Red_Light.bmp" />
+    <Image Include="res\Red_Liht.bmp" />
     <Image Include="res\rotating_16px.ico" />
     <Image Include="res\rotating_24px.ico" />
     <Image Include="res\SerialPort_button_off.ico" />

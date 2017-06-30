@@ -21,6 +21,8 @@
 #include "Motion_Capture_MFCView.h"
 #include "Motion_Capture_MFCDoc.h"
 #include "CalibrationDlg.h"
+#include "MySuperGrid.h"
+#include <set>
 
 DWORD WINAPI readPortFunc(LPVOID lpParameter);
 class CMainFrame;
@@ -69,6 +71,11 @@ private:
 	CMFCRibbonButton * p_Button_Calibration_Processing;
 	CMFCRibbonCheckBox * p_CheckBox_Transmission_Model_Switch;
 
+	//树形控件相关
+	bool after_map_node_number;
+	CMFCRibbonButton* p_Button_Map_Node_Number;
+	
+
 	//子窗口相关
 	CSplitterWnd m_wndSplitter;
 		
@@ -80,6 +87,8 @@ public:
 	int calibration_Index;
 
 	CCalibrationDlg* p_calibration_Dlg;
+
+	std::set<int> nodeNumberRecordSet;
 // 操作
 public:
 	int get_JointID_by_NodeID(const int node_id);
@@ -113,7 +122,7 @@ protected:  // 控件条嵌入成员
 	CMFCToolBarImages m_PanelImages;
 	CMFCRibbonStatusBar  m_wndStatusBar;
 	COutlookBar       m_wndNavigationBar;
-	CMFCShellTreeCtrl m_wndTree;
+	CMySuperGrid m_wndTree;
 	CCalendarBar      m_wndCalendar;
 	CMFCCaptionBar    m_wndCaptionBar;
 
@@ -130,7 +139,7 @@ protected:
 	afx_msg void OnUpdateFilePrintPreview(CCmdUI* pCmdUI);
 	DECLARE_MESSAGE_MAP()
 
-	BOOL CreateOutlookBar(CMFCOutlookBar& bar, UINT uiID, CMFCShellTreeCtrl& tree, CCalendarBar& calendar, int nInitialWidth);
+	BOOL CreateOutlookBar(CMFCOutlookBar& bar, UINT uiID, CMySuperGrid& tree, CCalendarBar& calendar, int nInitialWidth);
 	BOOL CreateCaptionBar();
 
 	int FindFocusedOutlookWnd(CMFCOutlookBarTabCtrl** ppOutlookWnd);
@@ -157,6 +166,11 @@ public:
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	void Send_by_SerialPort(char* buf, int length);
 	virtual BOOL OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext);
+	bool IsAfterMapNodeNumber();
+	void SetMapNodeNumberFlag();
+	void ClearMapNodeNumberFalg();
+	CMySuperGrid* getCMySuperGridPtr();
+	afx_msg void OnButtonmapnode();
 };
 
 

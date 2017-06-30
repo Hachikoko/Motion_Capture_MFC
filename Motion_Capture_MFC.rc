@@ -114,6 +114,8 @@ IDB_INFO                BITMAP                  "res\\info.bmp"
 
 IDB_SERIALPORT_ON_OFF   BITMAP                  "res\\serial_port_off_on.bmp"
 
+IDB_GREENREDLIGHT       BITMAP                  "res\\Green_Red_Light.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

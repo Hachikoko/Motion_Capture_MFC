@@ -6,6 +6,7 @@
 #include "cal3d/vector.h"
 #include "cal3d/quaternion.h"
 #include "Timer.h"
+#include "SuperGridCtrl.h"
 
 
 static char frame_buf[1024];
@@ -25,6 +26,38 @@ CSerialDataProc::~CSerialDataProc()
 }
 
 static  int count = 0;
+
+void CSerialDataProc::init_list(CStringList &list)
+{
+	list.AddTail(_T("Skeleton"));
+	list.AddTail(_T("根节点"));
+	list.AddTail(_T("脊柱1"));
+	list.AddTail(_T("脊柱2"));
+	list.AddTail(_T("脊柱3"));
+	list.AddTail(_T("颈椎"));
+	list.AddTail(_T("头部"));
+	list.AddTail(_T("左肩"));
+	list.AddTail(_T("左大臂"));
+	list.AddTail(_T("左小臂"));
+	list.AddTail(_T("左手"));
+	list.AddTail(_T("右肩"));
+	list.AddTail(_T("右大臂"));
+	list.AddTail(_T("右小臂"));
+	list.AddTail(_T("右手"));
+	list.AddTail(_T("左大腿"));
+	list.AddTail(_T("左小腿"));
+	list.AddTail(_T("左足"));
+	list.AddTail(_T("左脚趾"));
+	list.AddTail(_T("右大腿"));
+	list.AddTail(_T("右小腿"));
+	list.AddTail(_T("右足"));
+	list.AddTail(_T("右脚趾"));
+}
+
+CStringList* CSerialDataProc::getStringListPtr(void)
+{
+	return &list;
+}
 
 int CSerialDataProc::dataProc(struct PtrForFrameAppDoc * pFrameViewDoc, const char buf[])
 {
@@ -46,6 +79,7 @@ int CSerialDataProc::dataProc(struct PtrForFrameAppDoc * pFrameViewDoc, const ch
 	//为帧数据消息
 	if ('D' == buf[0])
 	{	
+		TRACE("%d:%d\r\n", buf[1], *(unsigned int*)(buf + 2));
 		frameDataProc(pFrameViewDoc, buf);
 	}
 
@@ -77,6 +111,49 @@ int CSerialDataProc::frameDataProc(struct PtrForFrameAppDoc*pFrameViewDoc, const
 			return -1;
 		}
 	}
+	//记录节点号，准备树形控件信息
+	if (!(pMainFrame->IsAfterMapNodeNumber())) //当未映射节点时，进入
+	{
+
+		pre_set_size = pMainFrame->nodeNumberRecordSet.size();
+		pMainFrame->nodeNumberRecordSet.insert(buf[1]);
+
+		if (pMainFrame->nodeNumberRecordSet.size() == pre_set_size) //数量不变时，进入
+		{
+			if (pre_set_size > pre_pre_set_size)  //数量是否发生变化
+			{
+				pre_pre_set_size = pre_set_size;
+				CMySuperGrid* tempSuperGrid = pMainFrame->getCMySuperGridPtr();
+				tempSuperGrid->_DeleteAll();
+				for (auto nodeNumber : pMainFrame->nodeNumberRecordSet)
+				{
+					CItemInfo*lp = new CItemInfo();
+					CString tempStr;
+					tempStr.Format(_T("节点%d"), nodeNumber);
+					lp->SetItemText(tempStr);
+					lp->SetNodeNumber(nodeNumber);
+					lp->SetImage(0);
+					lp->AddSubItemText(_T("未分配"));
+					lp->SetControlType(lp->CONTROLTYPE::combobox, 0);
+					if (list.GetCount() == 0)
+					{
+						init_list(list);
+					}
+					lp->SetListData(0, &list);
+					CSuperGridCtrl::CTreeItem * pRoot = tempSuperGrid->InsertRootItem(lp);
+					if (pRoot == NULL)
+						return -1;
+				}
+			}
+			else
+			{
+				pMainFrame->nodeNumberRecordSet.clear();
+			}
+		}
+		return 0;
+	}
+	
+
 
 	//校准程序
 	if (pMainFrame->GetCalibrationStartFlag() && !pMainFrame->GetCalibrationFlag())
@@ -136,7 +213,6 @@ int CSerialDataProc::frameDataProc(struct PtrForFrameAppDoc*pFrameViewDoc, const
 				if (-1 != id) {
 					//执行动画
 					pOpenGLView->pCal3DchildModel->executeAction(id, 0.0f, 0.0f);
-
 				}		
 			}
 		}
@@ -146,7 +222,7 @@ int CSerialDataProc::frameDataProc(struct PtrForFrameAppDoc*pFrameViewDoc, const
 		//获取间隔时间
 		float time = timer_for_serial->GetElapsedSeconds();
 
-		pFrameData = new CFrameData(pOpenGLView->pCal3DbaseModel, time * 10, 23);
+		pFrameData = new CFrameData(pOpenGLView->pCal3DbaseModel, time*20, 23);
 		int joint_id = pMainFrame->get_JointID_by_NodeID(buf[1]);
 		if (joint_id == -1)
 		{
@@ -190,7 +266,20 @@ int CSerialDataProc::makeKeyFrame(CObArray * p_frameDataArray,char frame_buf[])
 		CBoneDataOfFrame* temp_BoneDataOfFrame = (CBoneDataOfFrame*)ptempBoneDataArray->GetAt(i);
 		writeInteger(&temp, temp_BoneDataOfFrame->bone_id);
 		writeInteger(&temp, temp_BoneDataOfFrame->num_frame);
-
+		//if (i == 1)
+		//{
+		//	writeFloat(&temp, temp_BoneDataOfFrame->time);
+		//	writeFloat(&temp, temp_BoneDataOfFrame->t_x + 100.0f);
+		//	writeFloat(&temp, temp_BoneDataOfFrame->t_y );
+		//	writeFloat(&temp, temp_BoneDataOfFrame->t_z);
+		//} 
+		//else
+		//{
+		//	writeFloat(&temp, temp_BoneDataOfFrame->time);
+		//	writeFloat(&temp, temp_BoneDataOfFrame->t_x);
+		//	writeFloat(&temp, temp_BoneDataOfFrame->t_y);
+		//	writeFloat(&temp, temp_BoneDataOfFrame->t_z);
+		//}
 		writeFloat(&temp, temp_BoneDataOfFrame->time);
 		writeFloat(&temp, temp_BoneDataOfFrame->t_x);
 		writeFloat(&temp, temp_BoneDataOfFrame->t_y);
@@ -235,12 +324,15 @@ int CSerialDataProc::makeKeyFrame(CObArray * p_frameDataArray,char frame_buf[])
 			writeFloat(&temp, temp_quaternion.w);
 			continue;
 		}
+
 		temp_quaternion.set(temp_BoneDataOfFrame->r_x, temp_BoneDataOfFrame->r_y, temp_BoneDataOfFrame->r_z, temp_BoneDataOfFrame->r_w);
 		temp_quaternion = temp_quaternion * bias[i];
 		writeFloat(&temp, temp_quaternion.x);
 		writeFloat(&temp, temp_quaternion.y);
 		writeFloat(&temp, temp_quaternion.z);
 		writeFloat(&temp, temp_quaternion.w);
+
+
 	}
 
 	return 0;
@@ -373,6 +465,39 @@ void CSerialDataProc::proc_Frame_Data(CBoneDataOfFrame* p_Bone_Data,const char* 
 	switch (joint_id)
 	{
 	case 1:
+		if (true == pMainFrame->ptrForFrameAppDoc.wired_flag)
+		{
+			p_Bone_Data->r_w = *((float*)(buf + 24));			// temp_w <- buf_w; 												
+			p_Bone_Data->r_x = -(*((float*)(buf + 32)));			// temp_x <- buf_y;
+			p_Bone_Data->r_y = -(*((float*)(buf + 28)));			// temp_y <- buf_x;
+			p_Bone_Data->r_z = *((float*)(buf + 36));			// temp_z <- buf_z;
+		}
+		else
+		{
+			//p_Bone_Data->r_w = ((float) *((short*)(buf + 24))) / 10000.0f;			// temp_w <- buf_w; 												
+			//p_Bone_Data->r_x = ((float) *((short*)(buf + 26))) / 10000.0f;			// temp_x <- buf_y;
+			//p_Bone_Data->r_y = -((float) *((short*)(buf + 28))) / 10000.0f;			// temp_y <- buf_x;
+			//p_Bone_Data->r_z = -(((float) *((short*)(buf + 30))) / 10000.0f);			// temp_z <- buf_z;
+
+			p_Bone_Data->r_w = ((float) *((short*)(buf + 24))) / 10000.0f;			// temp_w <- buf_w; 												
+			p_Bone_Data->r_x = ((float) *((short*)(buf + 26))) / 10000.0f;			// temp_x <- buf_y;
+			p_Bone_Data->r_y = ((float) *((short*)(buf + 28))) / 10000.0f;			// temp_y <- buf_x;
+			p_Bone_Data->r_z = (((float) *((short*)(buf + 30))) / 10000.0f);			// temp_z <- buf_z;
+			CalQuaternion y_axis_90(0.0f, 0.7071067811f, 0.0f, 0.7071067811f);
+			CalQuaternion temp(p_Bone_Data->r_x, p_Bone_Data->r_y, p_Bone_Data->r_z, p_Bone_Data->r_w);
+			temp *= y_axis_90;
+			p_Bone_Data->r_x = -temp.x;
+			p_Bone_Data->r_y = -temp.y;
+			p_Bone_Data->r_z = -temp.z;
+			p_Bone_Data->r_w = temp.w;
+
+
+			//TRACE("p_Bone_Data->r_w:%f\r\n", p_Bone_Data->r_w);
+			//TRACE("p_Bone_Data->r_x:%f\r\n", p_Bone_Data->r_x);
+			//TRACE("p_Bone_Data->r_y:%f\r\n", p_Bone_Data->r_y);
+			//TRACE("p_Bone_Data->r_z:%f\r\n", p_Bone_Data->r_z);
+		}
+		break;
 	case 2:
 	case 3:
 	case 4:
@@ -392,16 +517,26 @@ void CSerialDataProc::proc_Frame_Data(CBoneDataOfFrame* p_Bone_Data,const char* 
 	case 13:
 		if (true == pMainFrame->ptrForFrameAppDoc.wired_flag)
 		{
+			//p_Bone_Data->r_w = *((float*)(buf + 24));			// temp_w <- buf_w; 												
+			//p_Bone_Data->r_x = -(*((float*)(buf + 28)));			// temp_x <- buf_y;
+			//p_Bone_Data->r_y = -(*((float*)(buf + 26)));			// temp_y <- buf_x;
+			//p_Bone_Data->r_z = *((float*)(buf + 30));			// temp_z <- buf_z;
+
 			p_Bone_Data->r_w = *((float*)(buf + 24));			// temp_w <- buf_w; 												
-			p_Bone_Data->r_x = -(*((float*)(buf + 28)));			// temp_x <- buf_y;
-			p_Bone_Data->r_y = -(*((float*)(buf + 26)));			// temp_y <- buf_x;
+			p_Bone_Data->r_y = -(*((float*)(buf + 28)));			// temp_x <- buf_y;
+			p_Bone_Data->r_x = -(*((float*)(buf + 26)));			// temp_y <- buf_x;
 			p_Bone_Data->r_z = *((float*)(buf + 30));			// temp_z <- buf_z;
 		} 
 		else
 		{
+			//p_Bone_Data->r_w = ((float) *((short*)(buf + 24))) / 10000.0f;			// temp_w <- buf_w; 												
+			//p_Bone_Data->r_x = -((float) *((short*)(buf + 28))) / 10000.0f;			// temp_x <- buf_y;
+			//p_Bone_Data->r_y = -((float) *((short*)(buf + 26))) / 10000.0f;			// temp_y <- buf_x;
+			//p_Bone_Data->r_z = (((float) *((short*)(buf + 30))) / 10000.0f);			// temp_z <- buf_z;
+
 			p_Bone_Data->r_w = ((float) *((short*)(buf + 24))) / 10000.0f;			// temp_w <- buf_w; 												
-			p_Bone_Data->r_x = -((float) *((short*)(buf + 28))) / 10000.0f;			// temp_x <- buf_y;
-			p_Bone_Data->r_y = -((float) *((short*)(buf + 26))) / 10000.0f;			// temp_y <- buf_x;
+			p_Bone_Data->r_y = ((float) *((short*)(buf + 28))) / 10000.0f;			// temp_x <- buf_y;
+			p_Bone_Data->r_x = -((float) *((short*)(buf + 26))) / 10000.0f;			// temp_y <- buf_x;
 			p_Bone_Data->r_z = (((float) *((short*)(buf + 30))) / 10000.0f);			// temp_z <- buf_z;
 		}
 
@@ -435,27 +570,44 @@ void CSerialDataProc::proc_Frame_Data(CBoneDataOfFrame* p_Bone_Data,const char* 
 void CSerialDataProc::calculate_bias(CalQuaternion* p_calibration_sum)
 {
 	CalQuaternion temp_quat, revers_father_quat,relative_rotation, reverse_relative_rotation;
+	CalQuaternion y_axis_90;
+	CalQuaternion temp;
 	for (int i = 0; i < 23; i++)
 	{
+		if (real_calibration_numbs[i] == 0)
+		{
+			continue;
+		}
 		if (true == pMainFrame->ptrForFrameAppDoc.wired_flag)
 		{
-			p_calibration_sum[i].w /= (float)(real_calibration_numbs[i]);
-			p_calibration_sum[i].x /= (float)(real_calibration_numbs[i]);
-			p_calibration_sum[i].y /= (float)(real_calibration_numbs[i]);
-			p_calibration_sum[i].z /= (float)(real_calibration_numbs[i]);
+				p_calibration_sum[i].w /= (float)(real_calibration_numbs[i]);
+				p_calibration_sum[i].x /= (float)(real_calibration_numbs[i]);
+				p_calibration_sum[i].y /= (float)(real_calibration_numbs[i]);
+				p_calibration_sum[i].z /= (float)(real_calibration_numbs[i]);
 		} 
 		else
 		{
-			p_calibration_sum[i].w /= (((float)(real_calibration_numbs[i])) * (10000.0f));
-			p_calibration_sum[i].x /= (((float)(real_calibration_numbs[i])) * (10000.0f));
-			p_calibration_sum[i].y /= (((float)(real_calibration_numbs[i])) * (10000.0f));
-			p_calibration_sum[i].z /= (((float)(real_calibration_numbs[i])) * (10000.0f));
+				p_calibration_sum[i].w /= (((float)(real_calibration_numbs[i])) * (10000.0f));
+				p_calibration_sum[i].x /= (((float)(real_calibration_numbs[i])) * (10000.0f));
+				p_calibration_sum[i].y /= (((float)(real_calibration_numbs[i])) * (10000.0f));
+				p_calibration_sum[i].z /= (((float)(real_calibration_numbs[i])) * (10000.0f));
 		}
 
 		
 		switch (i)
 		{
 		case 1:
+			y_axis_90.set(0.0f, 0.7071067811f, 0.0f, 0.7071067811f);
+			temp.set(p_calibration_sum[i].x, p_calibration_sum[i].y, p_calibration_sum[i].z, p_calibration_sum[i].w);
+			temp *= y_axis_90;
+
+			temp_quat.w = temp.w;
+			temp_quat.x = temp.x;
+			temp_quat.y = temp.y;
+			temp_quat.z = temp.z;
+
+			bias[i] = temp_quat*standard_Rotation[i];
+			break;
 		case 2:
 		case 3:
 		case 4:
@@ -473,21 +625,44 @@ void CSerialDataProc::calculate_bias(CalQuaternion* p_calibration_sum)
 			break;
 		case 12:
 			//取反
-			temp_quat.w = p_calibration_sum[i].w;  
-			temp_quat.x = p_calibration_sum[i].y;
-			temp_quat.y = p_calibration_sum[i].x;
+			//temp_quat.w = p_calibration_sum[i].w;  
+			//temp_quat.x = p_calibration_sum[i].y;
+			//temp_quat.y = p_calibration_sum[i].x;
+			//temp_quat.z = -p_calibration_sum[i].z;
+			//bias[i] = temp_quat*standard_Rotation[i];
+			temp_quat.w = p_calibration_sum[i].w;
+			temp_quat.x = p_calibration_sum[i].x;
+			temp_quat.y = p_calibration_sum[i].y;
 			temp_quat.z = -p_calibration_sum[i].z;
 			bias[i] = temp_quat*standard_Rotation[i];
+			
 			break;
 		case 13:
+			//revers_father_quat.w = p_calibration_sum[12].w;
+			//revers_father_quat.x = p_calibration_sum[12].y;
+			//revers_father_quat.y = p_calibration_sum[12].x;
+			//revers_father_quat.z = -p_calibration_sum[12].z;
+
+			//temp_quat.w = p_calibration_sum[i].w;
+			//temp_quat.x = -p_calibration_sum[i].y;
+			//temp_quat.y = -p_calibration_sum[i].x;
+			//temp_quat.z = p_calibration_sum[i].z;
 			revers_father_quat.w = p_calibration_sum[12].w;
-			revers_father_quat.x = p_calibration_sum[12].y;
-			revers_father_quat.y = p_calibration_sum[12].x;
+			revers_father_quat.x = p_calibration_sum[12].x;
+			revers_father_quat.y = p_calibration_sum[12].y;
 			revers_father_quat.z = -p_calibration_sum[12].z;
 
+
+
+			if (revers_father_quat.w == 0.0f) {
+				revers_father_quat.w = 0.998232f;
+				revers_father_quat.x = 0.059245f;
+				revers_father_quat.y = 0.0113f;
+				revers_father_quat.z = 0.0f;
+			}
 			temp_quat.w = p_calibration_sum[i].w;
-			temp_quat.x = -p_calibration_sum[i].y;
-			temp_quat.y = -p_calibration_sum[i].x;
+			temp_quat.x = -p_calibration_sum[i].x;
+			temp_quat.y = p_calibration_sum[i].y;
 			temp_quat.z = p_calibration_sum[i].z;
 
 			relative_rotation = revers_father_quat*temp_quat;

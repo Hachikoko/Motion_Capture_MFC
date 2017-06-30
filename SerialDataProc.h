@@ -114,6 +114,11 @@ static short real_calibration_numbs[23] = {0,0,0,0,0,
 									0,0,0,0,0,
 									0,0,0 };
 
+static CStringList list;
+
+static unsigned char pre_set_size = 0; //记录前一帧set中的值的数量
+static unsigned char pre_pre_set_size = 0; //记录前一个固定的数量值，只有此值发生变化时，重绘树形空间
+
 class CSerialDataProc
 {
 public:
@@ -132,6 +137,9 @@ public:
 
 
 //	static unsigned int pre_serialnum;
+
+	static void init_list(CStringList &list);
+	static CStringList* getStringListPtr(void);
 
 	static int dataProc(struct PtrForFrameAppDoc*pFrameViewDoc, const char buf[]);
 	static int frameDataProc(struct PtrForFrameAppDoc*pFrameViewDoc, const char buf[]);

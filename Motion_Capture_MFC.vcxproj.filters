@@ -108,6 +108,21 @@
     <ClInclude Include="CalibrationDlg.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ComboInListView.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="listeditctrl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MySuperGrid.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SuperGridCtrl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MyButton.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Motion_Capture_MFC.cpp">
@@ -183,6 +198,21 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="CalibrationDlg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ComboInListView.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="listeditctrl.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MySuperGrid.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SuperGridCtrl.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MyButton.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -298,6 +328,33 @@
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="res\serial_port_off_on.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="C:\Users\10240\Desktop\Button_warning_icon_32px_1081641_easyicon.net.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="C:\Users\10240\Desktop\green_light.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="C:\Users\10240\Desktop\Green_Light.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="C:\Users\10240\Desktop\Red_Light.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\Green_Light.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\Red_Light.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\Red_Liht.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\bitmap1.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\Green_Red_Light.bmp">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>

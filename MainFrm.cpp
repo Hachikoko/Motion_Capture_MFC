@@ -47,6 +47,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_COMMAND(ID_CHECK_TRANSMISSION_SWITCH, &CMainFrame::OnCheckTransmissionSwitch)
 	ON_UPDATE_COMMAND_UI(ID_CHECK_TRANSMISSION_SWITCH, &CMainFrame::OnUpdateCheckTransmissionSwitch)
 	ON_WM_TIMER()
+	ON_COMMAND(ID_BUTTONMAPNODE, &CMainFrame::OnButtonmapnode)
 END_MESSAGE_MAP()
 
 // CMainFrame 构造/析构
@@ -55,6 +56,7 @@ CMainFrame::CMainFrame()
 :p_ComboBox_SerialportSelect(nullptr)
 , p_Motion_Capture_MFCView(nullptr)
 , p_calibration_Dlg(nullptr)
+, after_map_node_number(false)
 {
 	// TODO: 在此添加成员初始化代码
 	theApp.m_nAppLook = theApp.GetInt(_T("ApplicationLook"), ID_VIEW_APPLOOK_OFF_2007_BLACK);
@@ -71,8 +73,8 @@ CMainFrame::CMainFrame()
 		joint_num_and_node_num_pair[i] = -1;
 	}
 
-	joint_num_and_node_num_pair[12] = 5;
-	joint_num_and_node_num_pair[13] = 6;
+//	joint_num_and_node_num_pair[12] = 12;
+//	joint_num_and_node_num_pair[13] = 6;
 
 	Calibration_Flag = false;
 	Calibration_Start_Flag = false;
@@ -152,7 +154,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	p_ComboBox_SerialportbaudRate = DYNAMIC_DOWNCAST(CMFCRibbonComboBox, m_wndRibbonBar.FindByID(ID_SERIALPORT_BAUDRATE));
 	p_Button_OpenSerialPort = DYNAMIC_DOWNCAST(CMFCRibbonButton, m_wndRibbonBar.FindByID(ID_OPEN_SERIALPORT));
 	p_CheckBox_Transmission_Model_Switch = DYNAMIC_DOWNCAST(CMFCRibbonCheckBox, m_wndRibbonBar.FindByID(ID_CHECK_TRANSMISSION_SWITCH));
-
+	p_Button_Map_Node_Number = DYNAMIC_DOWNCAST(CMFCRibbonButton, m_wndRibbonBar.FindByID(ID_BUTTONMAPNODE));
 
 	EnumerateSerialPorts(comm_vector);
 
@@ -288,7 +290,7 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 	return TRUE;
 }
 
-BOOL CMainFrame::CreateOutlookBar(CMFCOutlookBar& bar, UINT uiID, CMFCShellTreeCtrl& tree, CCalendarBar& calendar, int nInitialWidth)
+BOOL CMainFrame::CreateOutlookBar(CMFCOutlookBar& bar, UINT uiID, CMySuperGrid& tree, CCalendarBar& calendar, int nInitialWidth)
 {
 	bar.SetMode2003();
 
@@ -319,7 +321,11 @@ BOOL CMainFrame::CreateOutlookBar(CMFCOutlookBar& bar, UINT uiID, CMFCShellTreeC
 	CRect rectDummy(0, 0, 0, 0);
 	const DWORD dwTreeStyle = WS_CHILD | WS_VISIBLE | TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS;
 
-	tree.Create(dwTreeStyle, rectDummy, &bar, 1200);
+	tree.Create(WS_CHILD | WS_VISIBLE | WS_TABSTOP, rectDummy, this, 1200);
+	tree.InitializeGrid();
+	tree.SetExtendedStyle(0);
+	tree.ModifyStyleEx(0, WS_EX_CLIENTEDGE);
+
 	bNameValid = strTemp.LoadString(IDS_FOLDERS);
 	ASSERT(bNameValid);
 	pOutlookBar->AddControl(&tree, strTemp, 2, TRUE, dwStyle);
@@ -791,4 +797,121 @@ BOOL CMainFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
 //	m_wndSplitter.Create(this, 2, 2, CSize(10, 10), pContext);
 
 	return CFrameWndEx::OnCreateClient(lpcs, pContext);
+}
+
+
+bool CMainFrame::IsAfterMapNodeNumber()
+{
+	return after_map_node_number;
+}
+
+
+void CMainFrame::SetMapNodeNumberFlag()
+{
+	after_map_node_number = true;
+}
+
+
+void CMainFrame::ClearMapNodeNumberFalg()
+{
+	after_map_node_number = false;
+}
+
+
+CMySuperGrid* CMainFrame::getCMySuperGridPtr()
+{
+	return &m_wndTree;
+}
+
+
+void CMainFrame::OnButtonmapnode()
+{
+	// TODO: 在此添加命令处理程序代码
+
+	if (!p_serialPort->is_open()) {
+		MessageBox(_T("串口未打开！"));
+		return;
+	}
+
+	if (!IsAfterMapNodeNumber())
+	{
+		int n = m_wndTree.GetRootCount();
+		CItemInfo* temp;
+		CStringList* p_list = CSerialDataProc::getStringListPtr();
+		CString temp_str, list_str, defult_str(_T("未分配"));
+		int nodeNumber, jointNumber;
+
+
+		for (int i = 0; i < n; i++)
+		{
+			temp = m_wndTree.GetData(m_wndTree.GetRootItem(i));
+			nodeNumber = temp->GetNodeNumber();
+			temp_str = temp->GetSubItem(0);
+			jointNumber = -1;
+
+			POSITION temp_position = p_list->GetHeadPosition();
+			while (temp_position)
+			{
+				list_str = p_list->GetNext(temp_position);
+				if (defult_str == temp_str)
+				{
+					AfxMessageBox(_T("存在未分配节点！"));
+					return;
+				}
+
+				jointNumber++;
+				if (!temp_position && temp_str != list_str)
+				{
+					jointNumber = -1;
+					break;
+				}
+
+				if (temp_str == list_str)
+				{
+					break;
+				}
+
+			}
+
+			//		TRACE(_T("jointNumber:%d\r\n"), jointNumber);
+			joint_num_and_node_num_pair[jointNumber] = nodeNumber;
+			SetMapNodeNumberFlag();
+			p_Button_Map_Node_Number->SetText(_T("重新分配"));
+		}
+
+	} 
+	else
+	{
+		POSITION temp_root_positon;
+		CItemInfo*lp;
+		CMySuperGrid::CTreeItem* pItem;
+		ClearMapNodeNumberFalg();
+		for (int i = 0; i < 23; i++)
+		{
+			joint_num_and_node_num_pair[i] = -1;
+		}
+
+
+		temp_root_positon = m_wndTree.GetRootHeadPosition();
+		if (temp_root_positon == nullptr)
+		{
+			AfxMessageBox(_T("不存在节点！"));
+			return;
+		}
+
+		pItem = m_wndTree.GetNextRoot(temp_root_positon);
+		lp = m_wndTree.GetData(pItem);
+		lp->SetSubItemText(0, _T("未分配"));
+		m_wndTree.UpdateData(pItem, lp, TRUE);
+		while (temp_root_positon)
+		{
+			pItem = m_wndTree.GetNextRoot(temp_root_positon);
+			lp = m_wndTree.GetData(pItem);
+			lp->SetSubItemText(0, _T("未分配"));
+			m_wndTree.UpdateData(pItem, lp, TRUE);
+		}
+		p_Button_Map_Node_Number->SetText(_T("确定分配"));
+	}
+
+
 }
