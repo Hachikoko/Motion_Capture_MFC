@@ -743,21 +743,49 @@ void CSerialDataProc::calculate_bias(CalQuaternion* p_calibration_sum)
 		case 14:
 			break;
 		case 15:
+
 			temp_quat.w = p_calibration_sum[i].w;
 			temp_quat.z = -p_calibration_sum[i].x;
 			temp_quat.y = -p_calibration_sum[i].y;
 			temp_quat.x = -p_calibration_sum[i].z;
 			temp_quat *= y_axis_90;
 			temp_quat.conjugate();
+			temp_quat.z *= -1.0f;
 			bias[i] = temp_quat*standard_Rotation[i];
 			break;
 		case 16:
+			//revers_father_quat.w = p_calibration_sum[15].w;
+			//revers_father_quat.z = -p_calibration_sum[15].x;
+			//revers_father_quat.y = -p_calibration_sum[15].y;
+			//revers_father_quat.x = -p_calibration_sum[15].z;
+			//revers_father_quat *= y_axis_90;
+			//revers_father_quat.conjugate();
+			//if (revers_father_quat.w == 0.0f) {
+			//	revers_father_quat.w = 0.0173822f;
+			//	revers_father_quat.x = -0.0107283f;
+			//	revers_father_quat.y = -0.99979f;
+			//	revers_father_quat.z = -0.00155526f;
+			//}
+
+			//temp.set(p_calibration_sum[i].x, p_calibration_sum[i].y, p_calibration_sum[i].z, p_calibration_sum[i].w);
+			//temp *= y_axis_90;
+			//temp_quat.w = temp.w;			// temp_w <- buf_w; 												
+			//temp_quat.x = temp.z;			// temp_x <- buf_y;
+			//temp_quat.y = -temp.y;			// temp_y <- buf_x;
+			//temp_quat.z = -temp.x;			// temp_z <- buf_z;
+
+			//relative_rotation = revers_father_quat*temp_quat;
+			//reverse_relative_rotation.set(-relative_rotation.x, -relative_rotation.y, -relative_rotation.z, relative_rotation.w);
+
+			//bias[i] = reverse_relative_rotation*standard_Rotation[i];
+
 			revers_father_quat.w = p_calibration_sum[15].w;
 			revers_father_quat.z = -p_calibration_sum[15].x;
 			revers_father_quat.y = -p_calibration_sum[15].y;
 			revers_father_quat.x = -p_calibration_sum[15].z;
 			revers_father_quat *= y_axis_90;
 			revers_father_quat.conjugate();
+			temp_quat.z *= -1.0f;
 			if (revers_father_quat.w == 0.0f) {
 				revers_father_quat.w = 0.0173822f;
 				revers_father_quat.x = -0.0107283f;
@@ -772,10 +800,17 @@ void CSerialDataProc::calculate_bias(CalQuaternion* p_calibration_sum)
 			temp_quat.y = -temp.y;			// temp_y <- buf_x;
 			temp_quat.z = -temp.x;			// temp_z <- buf_z;
 
+			temp_quat *= z_axis_90;
+			temp_quat *= z_axis_90;
+			temp_quat *= x_axis_90;
+			temp_quat *= x_axis_90;
+
 			relative_rotation = revers_father_quat*temp_quat;
 			reverse_relative_rotation.set(-relative_rotation.x, -relative_rotation.y, -relative_rotation.z, relative_rotation.w);
 
 			bias[i] = reverse_relative_rotation*standard_Rotation[i];
+
+
 
 		case 17:
 			break;
