@@ -367,6 +367,7 @@ int CSerialDataProc::calculate_relative_rotation(CObArray * p_frameDataArray,int
 	CBoneDataOfFrame*p_temp_child_bone_data;
 	CalQuaternion revers_father_quat;
 	CalQuaternion child_quat;
+	CalQuaternion temp;
 	CalQuaternion x_axis_clockwise_90(0.7071067811f, 0.0f, 0.0f, 0.7071067811f);
 	CalQuaternion y_axis_clockwise_90(0.0f, 0.7071067811f, 0.0f, 0.7071067811f);
 	CalQuaternion z_axis_clockwise_90(0.0f, 0.0f,0.7071067811f, 0.7071067811f);
@@ -409,16 +410,15 @@ int CSerialDataProc::calculate_relative_rotation(CObArray * p_frameDataArray,int
 		revers_father_quat *= y_axis_clockwise_90;
 		revers_father_quat *= y_axis_clockwise_90;
 		revers_father_quat *= z_axis_clockwise_90;
-		revers_father_quat.conjugate();
+		temp = revers_father_quat;
+		revers_father_quat.z = -temp.z;																				//步骤2：如果发现只有根节点转动时，子节点的转动方向相反，调整根节点 此处根节点为1，子节点12
 
 		p_temp_child_bone_data = (CBoneDataOfFrame*)(p_Frame_Data_for_Child->boneData.GetAt(child_joint_id));
 		child_quat.set(p_temp_child_bone_data->r_x, p_temp_child_bone_data->r_y, p_temp_child_bone_data->r_z, p_temp_child_bone_data->r_w);
 
-		result_data = revers_father_quat*child_quat;
+		result_data = revers_father_quat*child_quat;																//这两部基于当子节点转动已经没有问题时，再进行下列调整
+		result_data *= y_axis_clockwise_90;																			//步骤1：先调整相对转动后的姿态
 
-		result_data *= z_axis_clockwise_90;
-		result_data *= x_axis_clockwise_90;
-		result_data *= x_axis_clockwise_90;
 		break;
 	case 13:
 		p_temp_father_bone_data = (CBoneDataOfFrame*)(p_Frame_Data_for_Father->boneData.GetAt(father_joint_id));
@@ -433,18 +433,17 @@ int CSerialDataProc::calculate_relative_rotation(CObArray * p_frameDataArray,int
 
 	case 15:
 		p_temp_father_bone_data = (CBoneDataOfFrame*)(p_Frame_Data_for_Father->boneData.GetAt(father_joint_id));
-		revers_father_quat.set(-p_temp_father_bone_data->r_x, -p_temp_father_bone_data->r_y, p_temp_father_bone_data->r_z, p_temp_father_bone_data->r_w);
+		revers_father_quat.set(p_temp_father_bone_data->r_x, p_temp_father_bone_data->r_y, p_temp_father_bone_data->r_z, p_temp_father_bone_data->r_w);
 		revers_father_quat *= x_axis_clockwise_90;
 		revers_father_quat *= z_axis_clockwise_90;
-		revers_father_quat.conjugate();
+		temp = revers_father_quat;
+		revers_father_quat.x = -temp.x;
 
 		p_temp_child_bone_data = (CBoneDataOfFrame*)(p_Frame_Data_for_Child->boneData.GetAt(child_joint_id));
 		child_quat.set(p_temp_child_bone_data->r_x, p_temp_child_bone_data->r_y, p_temp_child_bone_data->r_z, p_temp_child_bone_data->r_w);
 
 		result_data = revers_father_quat*child_quat;
-
-		y_axis_clockwise_90.conjugate();
-		result_data *= y_axis_clockwise_90;
+		result_data *= x_axis_clockwise_90;
 		result_data *= x_axis_clockwise_90;
 
 
@@ -531,11 +530,34 @@ void CSerialDataProc::proc_Frame_Data(CBoneDataOfFrame* p_Bone_Data,const char* 
 			p_Bone_Data->r_z = (((float) *((short*)(buf + 30))) / 10000.0f);			// temp_z <- buf_z;
 
 			temp.set(p_Bone_Data->r_x, p_Bone_Data->r_y, p_Bone_Data->r_z, p_Bone_Data->r_w);
+
 			temp *= y_axis_90;
-			p_Bone_Data->r_x = -temp.x;
-			p_Bone_Data->r_y = -temp.y;
-			p_Bone_Data->r_z = -temp.z;
+			temp *= y_axis_90;
+			temp *= z_axis_90;
+
+
+			p_Bone_Data->r_z = temp.x;
+			p_Bone_Data->r_x = temp.y;
+			p_Bone_Data->r_y = temp.z;
+			p_Bone_Data->r_w = -temp.w;
+			temp.set(p_Bone_Data->r_x, p_Bone_Data->r_y, p_Bone_Data->r_z, p_Bone_Data->r_w);
+			x_axis_90.conjugate();
+			z_axis_90.conjugate();
+			temp *= x_axis_90;
+			temp *= z_axis_90;
+			p_Bone_Data->r_x = temp.x;
+			p_Bone_Data->r_y = temp.y;
+			p_Bone_Data->r_z = temp.z;
 			p_Bone_Data->r_w = temp.w;
+
+			//temp *= y_axis_90;
+			//temp.conjugate();
+
+			////p_Bone_Data->r_x = temp.x;
+			////p_Bone_Data->r_y = temp.y;
+			////p_Bone_Data->r_z = temp.z;
+			////p_Bone_Data->r_w = temp.w;
+
 		}
 		break;
 	case 2:
@@ -596,6 +618,7 @@ void CSerialDataProc::proc_Frame_Data(CBoneDataOfFrame* p_Bone_Data,const char* 
 		p_Bone_Data->r_z = (((float) *((short*)(buf + 30))) / 10000.0f);			// temp_z <- buf_z;
 		temp.set(p_Bone_Data->r_x, p_Bone_Data->r_y, p_Bone_Data->r_z, p_Bone_Data->r_w);
 		temp *= y_axis_90;
+
 		p_Bone_Data->r_w = temp.w;			// temp_w <- buf_w; 												
 		p_Bone_Data->r_x = temp.z;			// temp_x <- buf_y;
 		p_Bone_Data->r_y = -temp.y;			// temp_y <- buf_x;
@@ -654,11 +677,20 @@ void CSerialDataProc::calculate_bias(CalQuaternion* p_calibration_sum)
 		case 1:
 			temp.set(p_calibration_sum[i].x, p_calibration_sum[i].y, p_calibration_sum[i].z, p_calibration_sum[i].w);
 			temp *= y_axis_90;
+			temp *= y_axis_90;
+			temp *= z_axis_90;
 
-			temp_quat.w = temp.w;
-			temp_quat.x = temp.x;
-			temp_quat.y = temp.y;
-			temp_quat.z = temp.z;
+			temp_quat.z = temp.x;
+			temp_quat.x = temp.y;
+			temp_quat.y = temp.z;
+			temp_quat.w = -temp.w;
+
+			x_axis_90.conjugate();
+			z_axis_90.conjugate();
+			temp_quat *= x_axis_90;
+			temp_quat *= z_axis_90;
+
+			temp_quat.conjugate();
 
 			bias[i] = temp_quat*standard_Rotation[i];
 			break;
