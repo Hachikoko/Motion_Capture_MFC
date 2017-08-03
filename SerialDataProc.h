@@ -35,11 +35,11 @@ static char father_child_joint_pair[23][2] = {
 	4,5,
 	5,6,
 	5,7,
-	7,8,
+	7,8,  //左大臂的根节点为1
 	8,9,
 	9,10,
 	5,11,
-	1,12,
+	11,12,	//右大臂的根节点为1
 	12,13,
 	13,14,
 	1,15,
@@ -53,29 +53,29 @@ static char father_child_joint_pair[23][2] = {
 };
 
 static CalQuaternion standard_Rotation[23] = {
-	CalQuaternion(0,0,0.707106,0.707106),
-	CalQuaternion(0.499999,0.5,0.5,0.500001),
-	CalQuaternion(0,0,0,1),
-	CalQuaternion(0,0,0,1),
-	CalQuaternion(0,0,0,1),
-	CalQuaternion(0,0,0,1),
-	CalQuaternion(0,0,0,1),
-	CalQuaternion(0.632981, -0.000253104,0.774167,-0.000307361),
-	CalQuaternion(0,0.106166,0,0.994348),
-	CalQuaternion(0,0,-0.00908291,0.999959),
-	CalQuaternion(0.706825,0,0,0.707388),
-	CalQuaternion(-0.632981,0.000250957,0.774167,-0.000309116),
-	CalQuaternion(0,-0.106166,0,0.994348),
-	CalQuaternion(0,0,-0.00908291,0.999959),
-	CalQuaternion(-0.706825,0,0,0.707388),
-	CalQuaternion(0.0107283,0.99979,0.00155526,0.0173822),
-	CalQuaternion(0,0,0.0127332,0.999919),
-	CalQuaternion(-0.00177716,0.0173617,-0.00200319,0.999846),
-	CalQuaternion(0,0,-0.707107,0.707107),
-	CalQuaternion(0.0107282,0.99979,-0.00155655,-0.0173836),
-	CalQuaternion(0,0,0.0127332,0.999919),
-	CalQuaternion(0.00177708,-0.0173617,-0.00200319,0.999846),
-	CalQuaternion(0,0,-0.707107,0.707107)
+	CalQuaternion(0,0,0.707106,0.707106),//0
+	CalQuaternion(0.499999,0.5,0.5,0.500001),//1
+	CalQuaternion(0,0,0,1),//2
+	CalQuaternion(0,0,0,1),//3
+	CalQuaternion(0,0,0,1),//4
+	CalQuaternion(0,0,0,1),//5
+	CalQuaternion(0,0,0,1),//6
+	CalQuaternion(0.632981, -0.000253104,0.774167,-0.000307361),//7
+	CalQuaternion(0,0.106166,0,0.994348),//8
+	CalQuaternion(0,0,-0.00908291,0.999959),//9
+	CalQuaternion(0.706825,0,0,0.707388),//10
+	CalQuaternion(-0.632981,0.000250957,0.774167,-0.000309116),//11
+	CalQuaternion(0,-0.106166,0,0.994348),//12
+	CalQuaternion(0,0,-0.00908291,0.999959),//13
+	CalQuaternion(-0.706825,0,0,0.707388),//14
+	CalQuaternion(0.0107283,0.99979,0.00155526,0.0173822),//15
+	CalQuaternion(0,0,0.0127332,0.999919),//16
+	CalQuaternion(-0.00177716,0.0173617,-0.00200319,0.999846),//17
+	CalQuaternion(0,0,-0.707107,0.707107),//18
+	CalQuaternion(0.0107282,0.99979,-0.00155655,-0.0173836),//19
+	CalQuaternion(0,0,0.0127332,0.999919),//20
+	CalQuaternion(0.00177708,-0.0173617,-0.00200319,0.999846),//21
+	CalQuaternion(0,0,-0.707107,0.707107)//22
 };
 
 //存储校准偏置

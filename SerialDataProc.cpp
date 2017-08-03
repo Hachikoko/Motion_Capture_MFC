@@ -404,6 +404,34 @@ int CSerialDataProc::calculate_relative_rotation(CObArray * p_frameDataArray,int
 	}
 	switch (child_joint_id)
 	{
+	case 8:
+		p_temp_father_bone_data = (CBoneDataOfFrame*)(p_Frame_Data_for_Father->boneData.GetAt(father_joint_id));
+		revers_father_quat.set(p_temp_father_bone_data->r_x, p_temp_father_bone_data->r_y, p_temp_father_bone_data->r_z, p_temp_father_bone_data->r_w);
+		revers_father_quat *= z_axis_clockwise_90;
+		revers_father_quat.conjugate();
+		p_temp_child_bone_data = (CBoneDataOfFrame*)(p_Frame_Data_for_Child->boneData.GetAt(child_joint_id));
+		child_quat.set(p_temp_child_bone_data->r_x, p_temp_child_bone_data->r_y, p_temp_child_bone_data->r_z, p_temp_child_bone_data->r_w);
+
+		result_data = revers_father_quat*child_quat;	
+		temp = y_axis_clockwise_90;
+		temp.conjugate();
+		result_data *= temp;
+		temp = x_axis_clockwise_90;
+		temp.conjugate();
+		result_data *= temp;
+		result_data *= temp;
+
+		break;
+	case 9:
+		p_temp_father_bone_data = (CBoneDataOfFrame*)(p_Frame_Data_for_Father->boneData.GetAt(father_joint_id));
+		revers_father_quat.set(-p_temp_father_bone_data->r_x, -p_temp_father_bone_data->r_y, -p_temp_father_bone_data->r_z, p_temp_father_bone_data->r_w);
+		
+
+		p_temp_child_bone_data = (CBoneDataOfFrame*)(p_Frame_Data_for_Child->boneData.GetAt(child_joint_id));
+		child_quat.set(p_temp_child_bone_data->r_x, p_temp_child_bone_data->r_y, p_temp_child_bone_data->r_z, p_temp_child_bone_data->r_w);
+
+		result_data = revers_father_quat*child_quat;
+		break;
 	case 12:
 		p_temp_father_bone_data = (CBoneDataOfFrame*)(p_Frame_Data_for_Father->boneData.GetAt(father_joint_id));
 		revers_father_quat.set(p_temp_father_bone_data->r_x, p_temp_father_bone_data->r_y, p_temp_father_bone_data->r_z, p_temp_father_bone_data->r_w);
@@ -460,6 +488,37 @@ int CSerialDataProc::calculate_relative_rotation(CObArray * p_frameDataArray,int
 		child_quat.set(p_temp_child_bone_data->r_x, p_temp_child_bone_data->r_y, p_temp_child_bone_data->r_z, p_temp_child_bone_data->r_w);
 
 		result_data = revers_father_quat*child_quat;
+		break;
+
+	case 19:
+		p_temp_father_bone_data = (CBoneDataOfFrame*)(p_Frame_Data_for_Father->boneData.GetAt(father_joint_id));
+		revers_father_quat.set(p_temp_father_bone_data->r_x, p_temp_father_bone_data->r_y, p_temp_father_bone_data->r_z, p_temp_father_bone_data->r_w);
+		x_axis_clockwise_90.conjugate();
+		z_axis_clockwise_90.conjugate();
+		revers_father_quat *= x_axis_clockwise_90;
+		revers_father_quat *= z_axis_clockwise_90;
+
+		
+		revers_father_quat.conjugate();
+
+		p_temp_child_bone_data = (CBoneDataOfFrame*)(p_Frame_Data_for_Child->boneData.GetAt(child_joint_id));
+		child_quat.set(p_temp_child_bone_data->r_x, p_temp_child_bone_data->r_y, p_temp_child_bone_data->r_z, p_temp_child_bone_data->r_w);
+
+		result_data = revers_father_quat*child_quat;
+		break;
+	case 20:
+		p_temp_father_bone_data = (CBoneDataOfFrame*)(p_Frame_Data_for_Father->boneData.GetAt(father_joint_id));
+		revers_father_quat.set(p_temp_father_bone_data->r_x, p_temp_father_bone_data->r_y, p_temp_father_bone_data->r_z, p_temp_father_bone_data->r_w);
+		revers_father_quat *= y_axis_clockwise_90;
+		revers_father_quat *= y_axis_clockwise_90;
+		revers_father_quat.conjugate();
+
+		p_temp_child_bone_data = (CBoneDataOfFrame*)(p_Frame_Data_for_Child->boneData.GetAt(child_joint_id));
+		child_quat.set(p_temp_child_bone_data->r_x, p_temp_child_bone_data->r_y, p_temp_child_bone_data->r_z, p_temp_child_bone_data->r_w);
+
+		result_data = revers_father_quat*child_quat;
+//		result_data.y = -result_data.y;
+//		result_data.z = -result_data.z;
 		break;
 
 	default:
@@ -523,40 +582,22 @@ void CSerialDataProc::proc_Frame_Data(CBoneDataOfFrame* p_Bone_Data,const char* 
 		}
 		else
 		{
-
 			p_Bone_Data->r_w = ((float) *((short*)(buf + 24))) / 10000.0f;			// temp_w <- buf_w; 												
 			p_Bone_Data->r_x = ((float) *((short*)(buf + 26))) / 10000.0f;			// temp_x <- buf_y;
 			p_Bone_Data->r_y = ((float) *((short*)(buf + 28))) / 10000.0f;			// temp_y <- buf_x;
 			p_Bone_Data->r_z = (((float) *((short*)(buf + 30))) / 10000.0f);			// temp_z <- buf_z;
 
 			temp.set(p_Bone_Data->r_x, p_Bone_Data->r_y, p_Bone_Data->r_z, p_Bone_Data->r_w);
-
 			temp *= y_axis_90;
 			temp *= y_axis_90;
-			temp *= z_axis_90;
-
-
-			p_Bone_Data->r_z = temp.x;
-			p_Bone_Data->r_x = temp.y;
-			p_Bone_Data->r_y = temp.z;
-			p_Bone_Data->r_w = -temp.w;
-			temp.set(p_Bone_Data->r_x, p_Bone_Data->r_y, p_Bone_Data->r_z, p_Bone_Data->r_w);
 			x_axis_90.conjugate();
-			z_axis_90.conjugate();
 			temp *= x_axis_90;
-			temp *= z_axis_90;
+
+
+			p_Bone_Data->r_z = temp.z;
 			p_Bone_Data->r_x = temp.x;
 			p_Bone_Data->r_y = temp.y;
-			p_Bone_Data->r_z = temp.z;
-			p_Bone_Data->r_w = temp.w;
-
-			//temp *= y_axis_90;
-			//temp.conjugate();
-
-			////p_Bone_Data->r_x = temp.x;
-			////p_Bone_Data->r_y = temp.y;
-			////p_Bone_Data->r_z = temp.z;
-			////p_Bone_Data->r_w = temp.w;
+			p_Bone_Data->r_w = -temp.w;
 
 		}
 		break;
@@ -570,6 +611,16 @@ void CSerialDataProc::proc_Frame_Data(CBoneDataOfFrame* p_Bone_Data,const char* 
 		break;
 	case 8:
 	case 9:
+		if (true == pMainFrame->ptrForFrameAppDoc.wired_flag)
+		{
+		}
+		else
+		{
+			p_Bone_Data->r_w = -((float) *((short*)(buf + 24))) / 10000.0f;			// temp_w <- buf_w; 												
+			p_Bone_Data->r_x = ((float) *((short*)(buf + 26))) / 10000.0f;			// temp_x <- buf_y;
+			p_Bone_Data->r_y = ((float) *((short*)(buf + 28))) / 10000.0f;			// temp_y <- buf_x;
+			p_Bone_Data->r_z = ((float) *((short*)(buf + 30))) / 10000.0f;			// temp_z <- buf_z;
+		}
 		break;
 	case 10:
 		break;
@@ -599,39 +650,83 @@ void CSerialDataProc::proc_Frame_Data(CBoneDataOfFrame* p_Bone_Data,const char* 
 		else
 		{
 			p_Bone_Data->r_w = ((float) *((short*)(buf + 24))) / 10000.0f;			// temp_w <- buf_w; 												
-			p_Bone_Data->r_z = -((float) *((short*)(buf + 26))) / 10000.0f;			// temp_x <- buf_y;
-			p_Bone_Data->r_y = -((float) *((short*)(buf + 28))) / 10000.0f;			// temp_y <- buf_x;
-			p_Bone_Data->r_x = -(((float) *((short*)(buf + 30))) / 10000.0f);			// temp_z <- buf_z;
+			p_Bone_Data->r_x = ((float) *((short*)(buf + 26))) / 10000.0f;			// temp_x <- buf_y;
+			p_Bone_Data->r_y = ((float) *((short*)(buf + 28))) / 10000.0f;			// temp_y <- buf_x;
+			p_Bone_Data->r_z = (((float) *((short*)(buf + 30))) / 10000.0f);		// temp_z <- buf_z;
 			temp.set(p_Bone_Data->r_x, p_Bone_Data->r_y, p_Bone_Data->r_z, p_Bone_Data->r_w);
 			temp *= y_axis_90;
 			p_Bone_Data->r_w = temp.w;			// temp_w <- buf_w; 												
-			p_Bone_Data->r_x = temp.x;			// temp_x <- buf_y;
+			p_Bone_Data->r_x = -temp.z;			// temp_x <- buf_y;
 			p_Bone_Data->r_y = temp.y;			// temp_y <- buf_x;
-			p_Bone_Data->r_z = -temp.z;			// temp_z <- buf_z;
+			p_Bone_Data->r_z = -temp.x;			// temp_z <- buf_z;
+
 
 		}
 		break;
 	case 16:
-		p_Bone_Data->r_w = ((float) *((short*)(buf + 24))) / 10000.0f;			// temp_w <- buf_w; 												
-		p_Bone_Data->r_x = ((float) *((short*)(buf + 26))) / 10000.0f;			// temp_x <- buf_y;
-		p_Bone_Data->r_y = ((float) *((short*)(buf + 28))) / 10000.0f;			// temp_y <- buf_x;
-		p_Bone_Data->r_z = (((float) *((short*)(buf + 30))) / 10000.0f);			// temp_z <- buf_z;
-		temp.set(p_Bone_Data->r_x, p_Bone_Data->r_y, p_Bone_Data->r_z, p_Bone_Data->r_w);
-		temp *= y_axis_90;
+		if (true == pMainFrame->ptrForFrameAppDoc.wired_flag)
+		{
 
-		p_Bone_Data->r_w = temp.w;			// temp_w <- buf_w; 												
-		p_Bone_Data->r_x = temp.z;			// temp_x <- buf_y;
-		p_Bone_Data->r_y = -temp.y;			// temp_y <- buf_x;
-		p_Bone_Data->r_z = -temp.x;			// temp_z <- buf_z;
+		}
+		else
+		{
+			p_Bone_Data->r_w = ((float) *((short*)(buf + 24))) / 10000.0f;			// temp_w <- buf_w; 												
+			p_Bone_Data->r_x = ((float) *((short*)(buf + 26))) / 10000.0f;			// temp_x <- buf_y;
+			p_Bone_Data->r_y = ((float) *((short*)(buf + 28))) / 10000.0f;			// temp_y <- buf_x;
+			p_Bone_Data->r_z = (((float) *((short*)(buf + 30))) / 10000.0f);			// temp_z <- buf_z;
+			temp.set(p_Bone_Data->r_x, p_Bone_Data->r_y, p_Bone_Data->r_z, p_Bone_Data->r_w);
+			y_axis_90.conjugate();
+			temp *= y_axis_90;
+
+			p_Bone_Data->r_w = temp.w;			// temp_w <- buf_w; 												
+			p_Bone_Data->r_x = temp.z;			// temp_x <- buf_y;
+			p_Bone_Data->r_y = temp.y;			// temp_y <- buf_x;
+			p_Bone_Data->r_z = temp.x;			// temp_z <- buf_z;
+		}
+
 		break;
 	case 17:
 		break;
 	case 18:
 		break;
 	case 19:
+		if (true == pMainFrame->ptrForFrameAppDoc.wired_flag)
+		{
+
+		}
+		else
+		{
+			p_Bone_Data->r_w = ((float) *((short*)(buf + 24))) / 10000.0f;			// temp_w <- buf_w; 												
+			p_Bone_Data->r_x = ((float) *((short*)(buf + 26))) / 10000.0f;			// temp_x <- buf_y;
+			p_Bone_Data->r_y = ((float) *((short*)(buf + 28))) / 10000.0f;			// temp_y <- buf_x;
+			p_Bone_Data->r_z = (((float) *((short*)(buf + 30))) / 10000.0f);		// temp_z <- buf_z;
+			temp.set(p_Bone_Data->r_x, p_Bone_Data->r_y, p_Bone_Data->r_z, p_Bone_Data->r_w);
+			temp *= y_axis_90;
+			p_Bone_Data->r_w = temp.w;			// temp_w <- buf_w; 												
+			p_Bone_Data->r_x = -temp.z;			// temp_x <- buf_y;
+			p_Bone_Data->r_y = -temp.y;			// temp_y <- buf_x;
+			p_Bone_Data->r_z = temp.x;			// temp_z <- buf_z;
+		}
 		break;
 	case 20:
+		if (true == pMainFrame->ptrForFrameAppDoc.wired_flag)
+		{
 
+		}
+		else
+		{
+			p_Bone_Data->r_w = ((float) *((short*)(buf + 24))) / 10000.0f;			// temp_w <- buf_w; 												
+			p_Bone_Data->r_x = ((float) *((short*)(buf + 26))) / 10000.0f;			// temp_x <- buf_y;
+			p_Bone_Data->r_y = ((float) *((short*)(buf + 28))) / 10000.0f;			// temp_y <- buf_x;
+			p_Bone_Data->r_z = (((float) *((short*)(buf + 30))) / 10000.0f);		// temp_z <- buf_z;
+			temp.set(p_Bone_Data->r_x, p_Bone_Data->r_y, p_Bone_Data->r_z, p_Bone_Data->r_w);
+			y_axis_90.conjugate();
+			temp *= y_axis_90;
+			p_Bone_Data->r_w = temp.w;			// temp_w <- buf_w; 												
+			p_Bone_Data->r_x = temp.z;			// temp_x <- buf_y;
+			p_Bone_Data->r_y = -temp.y;			// temp_y <- buf_x;
+			p_Bone_Data->r_z = -temp.x;			// temp_z <- buf_z;
+		}
 		break;
 	case 21:
 		break;
@@ -649,7 +744,16 @@ void CSerialDataProc::calculate_bias(CalQuaternion* p_calibration_sum)
 	CalQuaternion x_axis_90(0.7071067811f, 0.0f, 0.0f, 0.7071067811f);
 	CalQuaternion y_axis_90(0.0f, 0.7071067811f, 0.0f, 0.7071067811f);
 	CalQuaternion z_axis_90(0.0f, 0.0f, 0.7071067811f, 0.7071067811f);
-	CalQuaternion temp;
+	CalQuaternion temp,temp1;
+
+	for (int i = 0; i < 23;i++)
+	{
+		bias[i].w = 1;
+		bias[i].x = 0;
+		bias[i].y = 0;
+		bias[i].z = 0;
+	}
+
 	for (int i = 0; i < 23; i++)
 	{
 		if (real_calibration_numbs[i] == 0)
@@ -675,20 +779,18 @@ void CSerialDataProc::calculate_bias(CalQuaternion* p_calibration_sum)
 		switch (i)
 		{
 		case 1:
+
 			temp.set(p_calibration_sum[i].x, p_calibration_sum[i].y, p_calibration_sum[i].z, p_calibration_sum[i].w);
 			temp *= y_axis_90;
 			temp *= y_axis_90;
-			temp *= z_axis_90;
+			temp1 = x_axis_90;
+			temp1.conjugate();
+			temp *= temp1;
 
-			temp_quat.z = temp.x;
-			temp_quat.x = temp.y;
-			temp_quat.y = temp.z;
+			temp_quat.z = temp.z;
+			temp_quat.x = temp.x;
+			temp_quat.y = temp.y;
 			temp_quat.w = -temp.w;
-
-			x_axis_90.conjugate();
-			z_axis_90.conjugate();
-			temp_quat *= x_axis_90;
-			temp_quat *= z_axis_90;
 
 			temp_quat.conjugate();
 
@@ -703,7 +805,37 @@ void CSerialDataProc::calculate_bias(CalQuaternion* p_calibration_sum)
 		case 7:
 			break;
 		case 8:
+			temp_quat.w = p_calibration_sum[i].w;
+			temp_quat.x = p_calibration_sum[i].x;
+			temp_quat.y = p_calibration_sum[i].y;
+			temp_quat.z = p_calibration_sum[i].z;
+			bias[i] = temp_quat*standard_Rotation[i];
+			break;
 		case 9:
+			revers_father_quat.w = -p_calibration_sum[8].w;
+			revers_father_quat.x = p_calibration_sum[8].x;
+			revers_father_quat.y = p_calibration_sum[8].y;
+			revers_father_quat.z = p_calibration_sum[8].z;
+
+			revers_father_quat.conjugate();
+
+			if (revers_father_quat.w == 0.0f) {
+				revers_father_quat.w = -0.994348f;
+				revers_father_quat.x = 0.0f;
+				revers_father_quat.y = 0.106166f;
+				revers_father_quat.z = 0.0f;
+			}
+
+			temp_quat.w = -p_calibration_sum[i].w;
+			temp_quat.x = p_calibration_sum[i].x;
+			temp_quat.y = p_calibration_sum[i].y;
+			temp_quat.z = p_calibration_sum[i].z;
+
+			relative_rotation = revers_father_quat*temp_quat;
+			reverse_relative_rotation.set(-relative_rotation.x, -relative_rotation.y, -relative_rotation.z, relative_rotation.w);
+
+			bias[i] = reverse_relative_rotation*standard_Rotation[i];
+
 			break;
 		case 10:
 			break;
@@ -711,24 +843,32 @@ void CSerialDataProc::calculate_bias(CalQuaternion* p_calibration_sum)
 			break;
 		case 12:
 			//È¡·´
-			temp_quat.w = p_calibration_sum[i].w;
-			temp_quat.x = p_calibration_sum[i].x;
-			temp_quat.y = p_calibration_sum[i].y;
-			temp_quat.z = -p_calibration_sum[i].z;
-			bias[i] = temp_quat*standard_Rotation[i];
+			//temp_quat.w = p_calibration_sum[i].w;
+			//temp_quat.x = p_calibration_sum[i].x;
+			//temp_quat.y = p_calibration_sum[i].y;
+			//temp_quat.z = -p_calibration_sum[i].z;
+			//bias[i] = temp_quat*standard_Rotation[i];
 			
+			temp_quat.w = -p_calibration_sum[i].w;
+			temp_quat.x = -p_calibration_sum[i].x;
+			temp_quat.y = p_calibration_sum[i].y;
+			temp_quat.z = p_calibration_sum[i].z;
+			bias[i] = temp_quat*standard_Rotation[i];
+
 			break;
 		case 13:
-			revers_father_quat.w = p_calibration_sum[12].w;
-			revers_father_quat.x = p_calibration_sum[12].x;
+
+			revers_father_quat.w = -p_calibration_sum[12].w;
+			revers_father_quat.x = -p_calibration_sum[12].x;
 			revers_father_quat.y = p_calibration_sum[12].y;
-			revers_father_quat.z = -p_calibration_sum[12].z;
+			revers_father_quat.z = p_calibration_sum[12].z;
+
 
 			if (revers_father_quat.w == 0.0f) {
-				revers_father_quat.w = 0.998232f;
-				revers_father_quat.x = -0.059245f;
-				revers_father_quat.y = -0.0113f;
-				revers_father_quat.z = -0.0f;
+				revers_father_quat.w = -0.994348f;
+				revers_father_quat.x = 0.0f;
+				revers_father_quat.y = -0.106166;
+				revers_father_quat.z = 0.0f;
 			}
 			temp_quat.w = p_calibration_sum[i].w;
 			temp_quat.x = -p_calibration_sum[i].x;
@@ -743,49 +883,39 @@ void CSerialDataProc::calculate_bias(CalQuaternion* p_calibration_sum)
 		case 14:
 			break;
 		case 15:
-
 			temp_quat.w = p_calibration_sum[i].w;
-			temp_quat.z = -p_calibration_sum[i].x;
-			temp_quat.y = -p_calibration_sum[i].y;
-			temp_quat.x = -p_calibration_sum[i].z;
+			temp_quat.x = p_calibration_sum[i].x;
+			temp_quat.y = p_calibration_sum[i].y;
+			temp_quat.z = p_calibration_sum[i].z;
 			temp_quat *= y_axis_90;
-			temp_quat.conjugate();
-			temp_quat.z *= -1.0f;
-			bias[i] = temp_quat*standard_Rotation[i];
+
+			temp.w = temp_quat.w;
+			temp.x = -temp_quat.z;
+			temp.y = temp_quat.y;
+			temp.z = -temp_quat.x;
+
+			temp.conjugate();
+			bias[i] = temp*standard_Rotation[i];
 			break;
 		case 16:
-			//revers_father_quat.w = p_calibration_sum[15].w;
-			//revers_father_quat.z = -p_calibration_sum[15].x;
-			//revers_father_quat.y = -p_calibration_sum[15].y;
-			//revers_father_quat.x = -p_calibration_sum[15].z;
-			//revers_father_quat *= y_axis_90;
-			//revers_father_quat.conjugate();
-			//if (revers_father_quat.w == 0.0f) {
-			//	revers_father_quat.w = 0.0173822f;
-			//	revers_father_quat.x = -0.0107283f;
-			//	revers_father_quat.y = -0.99979f;
-			//	revers_father_quat.z = -0.00155526f;
-			//}
 
-			//temp.set(p_calibration_sum[i].x, p_calibration_sum[i].y, p_calibration_sum[i].z, p_calibration_sum[i].w);
-			//temp *= y_axis_90;
-			//temp_quat.w = temp.w;			// temp_w <- buf_w; 												
-			//temp_quat.x = temp.z;			// temp_x <- buf_y;
-			//temp_quat.y = -temp.y;			// temp_y <- buf_x;
-			//temp_quat.z = -temp.x;			// temp_z <- buf_z;
+			temp_quat.w = p_calibration_sum[i-1].w;
+			temp_quat.x = p_calibration_sum[i-1].x;
+			temp_quat.y = p_calibration_sum[i-1].y;
+			temp_quat.z = p_calibration_sum[i-1].z;
+			temp_quat *= y_axis_90;
 
-			//relative_rotation = revers_father_quat*temp_quat;
-			//reverse_relative_rotation.set(-relative_rotation.x, -relative_rotation.y, -relative_rotation.z, relative_rotation.w);
+			revers_father_quat.w = temp_quat.w;
+			revers_father_quat.x = -temp_quat.z;
+			revers_father_quat.y = temp_quat.y;
+			revers_father_quat.z = -temp_quat.x;
 
-			//bias[i] = reverse_relative_rotation*standard_Rotation[i];
-
-			revers_father_quat.w = p_calibration_sum[15].w;
-			revers_father_quat.z = -p_calibration_sum[15].x;
-			revers_father_quat.y = -p_calibration_sum[15].y;
-			revers_father_quat.x = -p_calibration_sum[15].z;
 			revers_father_quat *= y_axis_90;
+			revers_father_quat *= y_axis_90;
+
+//			revers_father_quat = revers_father_quat * bias[15];
 			revers_father_quat.conjugate();
-			temp_quat.z *= -1.0f;
+
 			if (revers_father_quat.w == 0.0f) {
 				revers_father_quat.w = 0.0173822f;
 				revers_father_quat.x = -0.0107283f;
@@ -794,30 +924,83 @@ void CSerialDataProc::calculate_bias(CalQuaternion* p_calibration_sum)
 			}
 
 			temp.set(p_calibration_sum[i].x, p_calibration_sum[i].y, p_calibration_sum[i].z, p_calibration_sum[i].w);
-			temp *= y_axis_90;
+			temp1 = y_axis_90;
+			temp1.conjugate();
+			temp *= temp1;
 			temp_quat.w = temp.w;			// temp_w <- buf_w; 												
 			temp_quat.x = temp.z;			// temp_x <- buf_y;
-			temp_quat.y = -temp.y;			// temp_y <- buf_x;
-			temp_quat.z = -temp.x;			// temp_z <- buf_z;
-
-			temp_quat *= z_axis_90;
-			temp_quat *= z_axis_90;
-			temp_quat *= x_axis_90;
-			temp_quat *= x_axis_90;
+			temp_quat.y = temp.y;			// temp_y <- buf_x;
+			temp_quat.z = temp.x;			// temp_z <- buf_z;
 
 			relative_rotation = revers_father_quat*temp_quat;
 			reverse_relative_rotation.set(-relative_rotation.x, -relative_rotation.y, -relative_rotation.z, relative_rotation.w);
 
 			bias[i] = reverse_relative_rotation*standard_Rotation[i];
 
-
+//			bias[i] = bias[i] * z_axis_90 *z_axis_90*x_axis_90*x_axis_90;
 
 		case 17:
 			break;
 		case 18:
 			break;
 		case 19:
+			temp_quat.w = p_calibration_sum[i].w;
+			temp_quat.x = p_calibration_sum[i].x;
+			temp_quat.y = p_calibration_sum[i].y;
+			temp_quat.z = p_calibration_sum[i].z;
+			temp_quat *= y_axis_90;
+			temp.w = temp_quat.w;			// temp_w <- buf_w; 												
+			temp.x = -temp_quat.z;			// temp_x <- buf_y;
+			temp.y = -temp_quat.y;			// temp_y <- buf_x;
+			temp.z = temp_quat.x;			// temp_z <- buf_z;
+
+			temp.conjugate();
+			bias[i] = temp*standard_Rotation[i];
+			break;
 		case 20:
+
+
+
+			temp_quat.w = p_calibration_sum[i-1].w;
+			temp_quat.x = p_calibration_sum[i-1].x;
+			temp_quat.y = p_calibration_sum[i-1].y;
+			temp_quat.z = p_calibration_sum[i-1].z;
+			temp_quat *= y_axis_90;
+			revers_father_quat.w = temp_quat.w;			// temp_w <- buf_w; 												
+			revers_father_quat.x = -temp_quat.z;			// temp_x <- buf_y;
+			revers_father_quat.y = -temp_quat.y;			// temp_y <- buf_x;
+			revers_father_quat.z = temp_quat.x;			// temp_z <- buf_z;
+
+			revers_father_quat *= y_axis_90;
+			revers_father_quat *= y_axis_90;
+
+			revers_father_quat.conjugate();
+
+			if (revers_father_quat.w == 0.0f) {
+				revers_father_quat.w = 0.0173836;
+				revers_father_quat.x = 0.0107282;
+				revers_father_quat.y = 0.99979;
+				revers_father_quat.z = -0.00155655;
+			}
+
+			temp.set(p_calibration_sum[i].x, p_calibration_sum[i].y, p_calibration_sum[i].z, p_calibration_sum[i].w);
+			temp1 = y_axis_90;
+			temp1.conjugate();
+			temp *= temp1;
+			temp_quat.w = temp.w;			// temp_w <- buf_w; 												
+			temp_quat.x = temp.z;			// temp_x <- buf_y;
+			temp_quat.y = -temp.y;			// temp_y <- buf_x;
+			temp_quat.z = -temp.x;			// temp_z <- buf_z;
+
+			relative_rotation = revers_father_quat*temp_quat;
+			reverse_relative_rotation.set(-relative_rotation.x, -relative_rotation.y, -relative_rotation.z, relative_rotation.w);
+
+			bias[i] = reverse_relative_rotation*standard_Rotation[i];
+
+//			bias[i] = bias[i] * z_axis_90 *z_axis_90*x_axis_90*x_axis_90;
+
+
+			break;
 		case 21:
 			break;
 		case 22:
